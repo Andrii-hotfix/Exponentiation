@@ -1,7 +1,7 @@
 #include "../bigint.h"
 
 #include <gtest/gtest.h>
-#include <gmp.h>
+#include <gmpxx.h>
 
 #include <iostream>
 #include <cstdlib>
@@ -9,20 +9,13 @@
 
 TEST(BigIntFunct, SimpleStrings)
 {
-    gmp_randstate_t state;
-    constexpr size_t seed = 123456789;
-    gmp_randinit_default(state);
-
-    gmp_randseed_ui(state, seed);
-
+    gmp_randclass randomMachine(gmp_randinit_default);
 
     for (size_t i = 124; i < 2048; ++i) {
-        mpz_t gmpBigNum;
-        mpz_init(gmpBigNum);
-        mpz_urandomb(gmpBigNum, state, i);
-        BigInt myBigNum(mpz_get_str(nullptr, 16, gmpBigNum));
+        mpz_class gmpBigNum = randomMachine.get_z_bits(i);
+        BigInt myBigNum(gmpBigNum.get_str(16));
 
-        ASSERT_TRUE(std::string(mpz_get_str(nullptr, 16, gmpBigNum)) == myBigNum.getStr());
+        ASSERT_TRUE(std::string(gmpBigNum.get_str(16)) == myBigNum.getStr());
     }
 }
 
@@ -53,26 +46,24 @@ TEST(BigIntFunct, SimpleStrings)
 //    }
 //}
 
-TEST(BigIntFunct, Not)
+TEST(BigIntFunct, And)
 {
-    gmp_randstate_t state;
-    constexpr size_t seed = 123456789;
-    gmp_randinit_default(state);
-    gmp_randseed_ui(state, seed);
-
+    gmp_randclass randomMachine(gmp_randinit_default);
     for (size_t i = 124; i < 2048; ++i) {
-        mpz_t gmpBigNum;
-        mpz_init(gmpBigNum);
-        mpz_urandomb(gmpBigNum, state, i);
+        mpz_class gmpLeft = randomMachine.get_z_bits(i);
+        mpz_class gmpRight = randomMachine.get_z_bits(i);
 
-        BigInt myBigNum(mpz_get_str(nullptr, 16, gmpBigNum));
-//        std::cout << gmpBigNum.get_str(16) << " vs " << myBigNum.getStr() << std::endl;
+        BigInt leftBigNum(gmpLeft.get_str(16));
+        BigInt rightBigNum(gmpRight.get_str(16));
 
-        gmpBigNum = ~gmpBigNum;
-        ~myBigNum;
+        std::cout << gmpLeft.get_str(16) << " vs " << leftBigNum.getStr() << std::endl;
+        std::cout << gmpRight.get_str(16) << " vs " << rightBigNum.getStr() << std::endl;
 
-        std::cout << gmpBigNum.get_str(16) << " vs " << myBigNum.getStr() << std::endl;
+        mpz_class andGmpResult = gmpLeft & gmpRight;
+        BigInt andBigIntResult = leftBigNum & rightBigNum;
 
-        ASSERT_TRUE(std::string(gmpBigNum.get_str(16)) == myBigNum.getStr());
+        std::cout << andGmpResult.get_str(16) << " vs " << andBigIntResult.getStr() << std::endl;
+
+        ASSERT_TRUE(std::string(andGmpResult.get_str(16)) == andBigIntResult.getStr());
     }
 }

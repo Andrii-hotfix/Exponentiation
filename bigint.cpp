@@ -4,15 +4,21 @@
 
 #include <stdexcept>
 #include <array>
+#include <algorithm>
 
-BigInt::BigInt(size_t size)
+BigInt::BigInt(size_t size, word val)
 {
-    _heap.resize(size);
+    _heap.resize(size, val);
 }
 
 BigInt::BigInt(const std::string &asStr, BigInt::NumberBase repr)
 {
     setStr(asStr, repr);
+}
+
+BigInt::BigInt(std::vector<word>&& heap)
+{
+    _heap.insert(_heap.begin(), std::make_move_iterator(heap.begin()), std::make_move_iterator(heap.end()));
 }
 
 void BigInt::setStr(const std::string &asStr, BigInt::NumberBase repr)
@@ -38,30 +44,27 @@ std::string BigInt::getStr(BigInt::NumberBase repr) const
     return result;
 }
 
-void BigInt::operator>>(size_t n)
+const std::vector<word>& BigInt::readHeap() const
 {
-    for (size_t i = 1; i < n; ++i) {
-        _heap.back() >>= 1;
-        for (size_t j = _heap.size() - 2; j > 0; --j) {
-            _heap[j + 1] |= ~(~word(0) >> (_heap[j] & word(1)));
-            _heap[j] >>= 1;
-        }
-    }
+    return _heap;
 }
 
-void BigInt::operator<<(size_t n)
+BigInt BigInt::operator&(const BigInt &right) const
 {
-     for (size_t i = 1; i < n; ++i) {
-        _heap.front() <<= 1;
-        for (size_t j = 1; j < _heap.size(); ++j) {
-            _heap[j - 1] |= ~(~word(0) << (_heap[j] & ~(~uint8_t(0) >> 1)));
-            _heap[j] <<= 1;
-        }
-    }
+    std::vector<word> resultHeap(std::max(right.wordLen(), wordLen()), 0);
+
+    long sizeDiff = std::labs(static_cast<long long>(right.wordLen() - wordLen()));
+    for (size_t i = resultHeap.size(), j = std::min; i > static_cast<size_t>(sizeDiff); --i)
+        resultHeap[i - 1] = _heap[i - 1] & right.readHeap()[i - 1];
+    return BigInt(std::move(resultHeap));
 }
 
-void BigInt::operator~()
+size_t BigInt::wordLen() const
 {
-    for (word &chunk : _heap)
-        chunk = ~chunk;
+    return _heap.size();
+}
+
+void BigInt::resize(size_t newSize)
+{
+    _heap.resize(newSize, 0);
 }

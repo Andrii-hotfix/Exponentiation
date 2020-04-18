@@ -19,14 +19,16 @@ public:
     };
 
     BigInt() = default;
-    BigInt(size_t size);
+    BigInt(size_t size, word val = 0);
     BigInt(const std::string &asStr, NumberBase repr = NumberBase::Dec);
+    BigInt(std::vector<word>&& heap);
+    BigInt(const BigInt& left) = default;
     // TODO copy constr?
 
     void setStr(const std::string &asStr, NumberBase repr = NumberBase::Dec);
 
     std::string getStr(NumberBase repr = NumberBase::Dec) const;
-    const std::vector<word>& getHeap() const;
+    const std::vector<word>& readHeap() const;
 
     BigInt operator*(const BigInt &right) const;
     BigInt operator%(const BigInt &right) const;
@@ -41,6 +43,9 @@ public:
     void operator%=(const BigInt &right);
     void operator&=(const BigInt &right);
     void operator|=(const BigInt &right);
+
+    size_t wordLen() const;
+    void resize(size_t newSize);
 
 private:
 //std::vector<uint8_t> str2Bytes(const std::string byteStr)
