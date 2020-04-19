@@ -30,17 +30,19 @@ void BigInt::setStr(const std::string &asStr, BigInt::NumberBase repr)
         trailingNulls += '0';
 
     std::string formattedStr = trailingNulls + asStr;
-    for (size_t i = 0; i < formattedStr.size(); i += 8)
-        _heap.push_back(static_cast<word>(stoul(formattedStr.substr(i, 8), nullptr, 16)));
+    size_t heapSize = static_cast<size_t>(formattedStr.size() / 8);
+    _heap.resize(heapSize);
+    for (size_t i = 0, j = heapSize - 1; i < formattedStr.size(); i += 8, --j)
+        _heap[j] = static_cast<word>(stoul(formattedStr.substr(i, 8), nullptr, 16));
 }
 
 std::string BigInt::getStr(BigInt::NumberBase repr) const
 {
     std::string result;
     // No trailing 0-digits
-    result += fmt::format("{:>x}", _heap.front());
-    for (size_t i = 1; i < _heap.size();  ++i)
-        result += fmt::format("{:0>8x}", _heap[i]);
+    result += fmt::format("{0:x}", _heap.back());
+    for (auto it = _heap.rbegin() + 1; it != _heap.rend(); ++it)
+        result += fmt::format("{:0>8x}", *it);
     return result;
 }
 
@@ -51,11 +53,54 @@ const std::vector<word>& BigInt::readHeap() const
 
 BigInt BigInt::operator&(const BigInt &right) const
 {
-    std::vector<word> resultHeap(std::max(right.wordLen(), wordLen()), 0);
+    std::vector<word> resultHeap(std::min(right.wordLen(), wordLen()), 0);
+    for (size_t i = 0; i < std::min(right.wordLen(), wordLen()); ++i)
+        resultHeap[i] = _heap[i] & right.readHeap()[i];
 
-    long sizeDiff = std::labs(static_cast<long long>(right.wordLen() - wordLen()));
-    for (size_t i = resultHeap.size(), j = std::min; i > static_cast<size_t>(sizeDiff); --i)
-        resultHeap[i - 1] = _heap[i - 1] & right.readHeap()[i - 1];
+    // Remove leading zeros
+    size_t newSize = resultHeap.size();
+    for (size_t i = resultHeap.size() - 1; i > 0 and resultHeap[i] == 0; --i)
+        --newSize;
+    resultHeap.resize(newSize);
+
+    return BigInt(std::move(resultHeap));
+}
+
+BigInt BigInt::operator|(const BigInt &right) const
+{
+    std::vector<word> resultHeap(std::max(right.wordLen(), wordLen()), 0);
+    size_t minLen = std::min(right.wordLen(), wordLen());
+    for (size_t i = 0; i < minLen; ++i)
+        resultHeap[i] = _heap[i] | right.readHeap()[i];
+
+    for (size_t i = minLen; i < right.wordLen(); ++i)
+        resultHeap[i] |= right.readHeap()[i];
+
+    for (size_t i = minLen; i < wordLen(); ++i)
+        resultHeap[i] |= _heap[i];
+
+    return BigInt(std::move(resultHeap));
+}
+
+BigInt BigInt::operator^(const BigInt &right) const
+{
+    std::vector<word> resultHeap(std::max(right.wordLen(), wordLen()), 0);
+    size_t minLen = std::min(right.wordLen(), wordLen());
+    for (size_t i = 0; i < minLen; ++i)
+        resultHeap[i] = _heap[i] ^ right.readHeap()[i];
+
+    for (size_t i = minLen; i < right.wordLen(); ++i)
+        resultHeap[i] ^= right.readHeap()[i];
+
+    for (size_t i = minLen; i < wordLen(); ++i)
+        resultHeap[i] ^= _heap[i];
+
+    // Remove leading zeros
+    size_t newSize = resultHeap.size();
+    for (size_t i = resultHeap.size() - 1; i > 0 and resultHeap[i] == 0; --i)
+        --newSize;
+    resultHeap.resize(newSize);
+
     return BigInt(std::move(resultHeap));
 }
 

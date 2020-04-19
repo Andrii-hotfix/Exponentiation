@@ -56,14 +56,43 @@ TEST(BigIntFunct, And)
         BigInt leftBigNum(gmpLeft.get_str(16));
         BigInt rightBigNum(gmpRight.get_str(16));
 
-        std::cout << gmpLeft.get_str(16) << " vs " << leftBigNum.getStr() << std::endl;
-        std::cout << gmpRight.get_str(16) << " vs " << rightBigNum.getStr() << std::endl;
-
         mpz_class andGmpResult = gmpLeft & gmpRight;
         BigInt andBigIntResult = leftBigNum & rightBigNum;
 
-        std::cout << andGmpResult.get_str(16) << " vs " << andBigIntResult.getStr() << std::endl;
+        ASSERT_TRUE(std::string(andGmpResult.get_str(16)) == andBigIntResult.getStr());
+    }
+}
+
+TEST(BigIntFunct, Or)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    for (size_t i = 124; i < 2048; ++i) {
+        mpz_class gmpLeft = randomMachine.get_z_bits(i);
+        mpz_class gmpRight = randomMachine.get_z_bits(i);
+
+        BigInt leftBigNum(gmpLeft.get_str(16));
+        BigInt rightBigNum(gmpRight.get_str(16));
+
+        mpz_class andGmpResult = gmpLeft | gmpRight;
+        BigInt andBigIntResult = leftBigNum | rightBigNum;
 
         ASSERT_TRUE(std::string(andGmpResult.get_str(16)) == andBigIntResult.getStr());
+    }
+}
+
+TEST(BigIntFunct, Xor)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    for (size_t i = 124; i < 2048; ++i) {
+        mpz_class gmpLeft = randomMachine.get_z_bits(i);
+        mpz_class gmpRight = randomMachine.get_z_bits(i);
+
+        BigInt leftBigNum(gmpLeft.get_str(16));
+        BigInt rightBigNum(gmpRight.get_str(16));
+
+        mpz_class xorGmpResult = gmpLeft ^ gmpRight;
+        BigInt xorBigIntResult = leftBigNum ^ rightBigNum;
+
+        ASSERT_TRUE(std::string(xorGmpResult.get_str(16)) == xorBigIntResult.getStr());
     }
 }
