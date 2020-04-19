@@ -20,12 +20,12 @@ public:
 
     BigInt() = default;
     BigInt(size_t size, word val = 0);
-    BigInt(const std::string &asStr, NumberBase repr = NumberBase::Dec);
+    BigInt(const std::string &asStr);
     BigInt(std::vector<word>&& heap);
     BigInt(const BigInt& left) = default;
     // TODO copy constr?
 
-    void setStr(const std::string &asStr, NumberBase repr = NumberBase::Dec);
+    void setHexStr(const std::string &asStr);
 
     std::string getStr(NumberBase repr = NumberBase::Dec) const;
     const std::vector<word>& readHeap() const;
@@ -36,6 +36,8 @@ public:
     BigInt operator&(const BigInt &right) const;
     BigInt operator|(const BigInt &right) const;
     BigInt operator^(const BigInt &right) const;
+    BigInt operator~() const;
+    BigInt operator>>(const BigInt &right) const;
 
     bool operator==(const BigInt &right) const;
 
@@ -44,10 +46,18 @@ public:
     void operator&=(const BigInt &right);
     void operator|=(const BigInt &right);
 
+    void smallDivisionAlg(word divisor, word& quotient, word& remainder);
     size_t wordLen() const;
+    size_t bitsLen() const;
+    bool isZero();
     void resize(size_t newSize);
 
 private:
+    void removeLeadingZeros();
+
+    std::string getDecStr() const;
+    std::string getHexcStr() const;
+    std::string getBinStr() const;
 //std::vector<uint8_t> str2Bytes(const std::string byteStr)
 //{
 //    std::vector<uint8_t> bytes;
