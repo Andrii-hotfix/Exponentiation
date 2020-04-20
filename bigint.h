@@ -32,12 +32,12 @@ public:
 
     BigInt operator*(const BigInt &right) const;
     BigInt operator%(const BigInt &right) const;
-    BigInt operator=(const BigInt &right) const;
     BigInt operator&(const BigInt &right) const;
     BigInt operator|(const BigInt &right) const;
     BigInt operator^(const BigInt &right) const;
     BigInt operator~() const;
-    BigInt operator>>(const BigInt &right) const;
+    BigInt operator>>(const size_t numOfShifts) const;
+    BigInt operator<<(const size_t numOfShifts) const;
 
     bool operator==(const BigInt &right) const;
 
@@ -47,13 +47,31 @@ public:
     void operator|=(const BigInt &right);
 
     void smallDivisionAlg(word divisor, word& quotient, word& remainder);
-    size_t wordLen() const;
     size_t bitsLen() const;
-    bool isZero();
-    void resize(size_t newSize);
+
+    inline size_t wordLen() const
+    {
+        return _heap.size();
+    }
+
+    inline bool isZero()
+    {
+        return _heap.size() == 1 and _heap.front() == 0;
+    }
+
+    inline void resize(size_t newSize)
+    {
+        _heap.resize(newSize, 0);
+    }
 
 private:
-    void removeLeadingZeros();
+    inline void removeLeadingZeros()
+    {
+        size_t newSize = _heap.size();
+        for (size_t i = _heap.size() - 1; i > 0 and _heap[i] == 0; --i)
+            --newSize;
+        _heap.resize(newSize);
+    }
 
     std::string getDecStr() const;
     std::string getHexcStr() const;

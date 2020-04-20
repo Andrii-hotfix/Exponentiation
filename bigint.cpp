@@ -107,6 +107,35 @@ BigInt BigInt::operator~() const
     return BigInt(std::move(resultHeap));
 }
 
+BigInt BigInt::operator>>(const size_t numOfShifts) const
+{
+    std::vector<word> resultHeap(_heap.begin(), _heap.end());
+    for (size_t shiftIteration = 0; shiftIteration < numOfShifts; ++shiftIteration) {
+        resultHeap.front() >>= 1;
+        for (size_t i = 1; i < _heap.size(); ++i) {
+            word carryMask = (word(1) & resultHeap[i]) << 31;
+            resultHeap[i] >>= 1;
+            resultHeap[i - 1] |= carryMask;
+        }
+    }
+    return BigInt(std::move(resultHeap));
+}
+
+BigInt BigInt::operator<<(const size_t numOfShifts) const
+{
+    std::vector<word> resultHeap(_heap.begin(), _heap.end());
+    for (size_t shiftIteration = 0; shiftIteration < numOfShifts; ++shiftIteration) {
+        resultHeap.back() <<= 1;
+        for (size_t i = _heap.size() - 2; i >= 1; --i) {
+            word carryMask = (~(~word(0) << 1) << 31);
+            carryMask &= resultHeap[i];
+            resultHeap[i] <<= 1;
+            resultHeap[i + 1] |= carryMask;
+        }
+    }
+    return BigInt(std::move(resultHeap));
+}
+
 void BigInt::smallDivisionAlg(word divisor, word& quotient, word& remainder)
 {
     quotient = 0;
@@ -115,11 +144,6 @@ void BigInt::smallDivisionAlg(word divisor, word& quotient, word& remainder)
     for (size_t i = bitsLen() - 1; i > 0; ++i) {
         remainder <<= 1;
     }
-}
-
-size_t BigInt::wordLen() const
-{
-    return _heap.size();
 }
 
 size_t BigInt::bitsLen() const
@@ -132,24 +156,6 @@ size_t BigInt::bitsLen() const
         --numberOfbits;
     }
     return numberOfbits;
-}
-
-bool BigInt::isZero()
-{
-    return _heap.size() == 1 and _heap.front() == 0;
-}
-
-void BigInt::resize(size_t newSize)
-{
-    _heap.resize(newSize, 0);
-}
-
-void BigInt::removeLeadingZeros()
-{
-    size_t newSize = _heap.size();
-    for (size_t i = _heap.size() - 1; i > 0 and _heap[i] == 0; --i)
-        --newSize;
-    _heap.resize(newSize);
 }
 
 std::string BigInt::getDecStr() const
