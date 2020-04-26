@@ -125,13 +125,20 @@ BigInt BigInt::operator<<(const size_t numOfShifts) const
 {
     std::vector<word> resultHeap(_heap.begin(), _heap.end());
     for (size_t shiftIteration = 0; shiftIteration < numOfShifts; ++shiftIteration) {
-        resultHeap.back() <<= 1;
-        for (size_t i = _heap.size() - 2; i >= 1; --i) {
-            word carryMask = (~(~word(0) << 1) << 31);
-            carryMask &= resultHeap[i];
+//        resultHeap.back() <<= 1;
+        word carryMask = 0;
+        for (size_t i = 0; i < resultHeap.size(); ++i) {
+            word newMask = ((~(~word(0) >> 1)) & resultHeap[i]) >> 31;
             resultHeap[i] <<= 1;
-            resultHeap[i + 1] |= carryMask;
+            resultHeap[i] |= carryMask;
+            carryMask = newMask;
+//            word carryMask = (~(~word(0) << 1) << 31);
+//            carryMask &= resultHeap[i - 1];
+//            resultHeap[i - 1] <<= 1;
         }
+        if (carryMask)
+            resultHeap.emplace_back(carryMask);
+
     }
     return BigInt(std::move(resultHeap));
 }

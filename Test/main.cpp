@@ -99,7 +99,7 @@ TEST(BigIntFunct, ShiftRight)
 
         std::default_random_engine gen;
         std::uniform_int_distribution<size_t> distr(0, i);
-        for (int j = 0; j < 500; ++j) {
+        for (int j = 0; j < 100; ++j) {
             size_t randomShift = distr(gen);
 
             gmpBigNum >>= randomShift;
@@ -115,24 +115,18 @@ TEST(BigIntFunct, ShiftLeft)
     gmp_randclass randomMachine(gmp_randinit_default);
 
     for (size_t i = 124; i < 2048; ++i) {
-        mpz_class gmpBigNum = randomMachine.get_z_bits(70);
+        mpz_class gmpBigNum = randomMachine.get_z_bits(i);
         BigInt myBigNum(gmpBigNum.get_str(16));
 
-        std::cout << gmpBigNum.get_str(2) << " vs " << myBigNum.getStr(BigInt::Bin) << std::endl;
-        gmpBigNum <<= 1;
-        myBigNum = myBigNum << 1;
-        std::cout << gmpBigNum.get_str(2) << " vs " << myBigNum.getStr(BigInt::Bin) << std::endl;
-//        std::default_random_engine gen;
-//        std::uniform_int_distribution<size_t> distr(0, i);
-//        for (int j = 0; j < 1000; ++j) {
-//            size_t randomShift = distr(gen);
+        std::default_random_engine gen;
+        std::uniform_int_distribution<size_t> distr(0, i);
+        for (int j = 0; j < 10; ++j) {
+            size_t randomShift = distr(gen);
+//            std::cout << "iteration: " << i << "random shift: " << randomShift << std::endl;
+            gmpBigNum <<= randomShift;
+            myBigNum = myBigNum << randomShift;
 
-//            gmpBigNum <<= randomShift;
-//            myBigNum = myBigNum << randomShift;
-
-//            ASSERT_TRUE(std::string(gmpBigNum.get_str(16)) == myBigNum.getStr(BigInt::Hex));
-//        }
-
-        ASSERT_TRUE(std::string(gmpBigNum.get_str(16)) == myBigNum.getStr(BigInt::Hex));
+            ASSERT_TRUE(std::string(gmpBigNum.get_str(16)) == myBigNum.getStr(BigInt::Hex));
+        }
     }
 }
