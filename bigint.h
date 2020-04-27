@@ -19,7 +19,7 @@ public:
     };
 
     BigInt() = default;
-    BigInt(size_t size, word val = 0);
+    BigInt(size_t size, word val);
     BigInt(const std::string &asStr);
     BigInt(std::vector<word>&& heap);
     BigInt(const BigInt& left) = default;
@@ -38,8 +38,12 @@ public:
     BigInt operator~() const;
     BigInt operator>>(const size_t numOfShifts) const;
     BigInt operator<<(const size_t numOfShifts) const;
+    bool operator[](size_t index) const;
+    std::pair<BigInt, BigInt> divisionRemainder(const BigInt &denominator);
 
     bool operator==(const BigInt &right) const;
+    bool operator<(const BigInt &right) const;
+    bool operator>(const BigInt &right) const;
 
     void operator*=(const BigInt &right);
     void operator%=(const BigInt &right);
@@ -48,6 +52,8 @@ public:
 
     void smallDivisionAlg(word divisor, word& quotient, word& remainder);
     size_t bitsLen() const;
+    bool getBitAt(size_t index) const;
+    void setBitAt(size_t index, bool value);
 
     inline size_t wordLen() const
     {
@@ -71,6 +77,11 @@ private:
         for (size_t i = _heap.size() - 1; i > 0 and _heap[i] == 0; --i)
             --newSize;
         _heap.resize(newSize);
+    }
+
+    inline const std::vector<word> &getHeap() const
+    {
+        return _heap;
     }
 
     std::string getDecStr() const;

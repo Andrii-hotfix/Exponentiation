@@ -99,7 +99,7 @@ TEST(BigIntFunct, ShiftRight)
 
         std::default_random_engine gen;
         std::uniform_int_distribution<size_t> distr(0, i);
-        for (int j = 0; j < 100; ++j) {
+        for (int j = 0; j < 10; ++j) {
             size_t randomShift = distr(gen);
 
             gmpBigNum >>= randomShift;
@@ -122,11 +122,42 @@ TEST(BigIntFunct, ShiftLeft)
         std::uniform_int_distribution<size_t> distr(0, i);
         for (int j = 0; j < 10; ++j) {
             size_t randomShift = distr(gen);
-//            std::cout << "iteration: " << i << "random shift: " << randomShift << std::endl;
             gmpBigNum <<= randomShift;
             myBigNum = myBigNum << randomShift;
 
             ASSERT_TRUE(std::string(gmpBigNum.get_str(16)) == myBigNum.getStr(BigInt::Hex));
         }
+    }
+}
+
+TEST(BigIntFunct, BitPositionGetSet)
+{
+    constexpr size_t numberOfBits = 100;
+    gmp_randclass randomMachine(gmp_randinit_default);
+    mpz_class gmpBigNum = randomMachine.get_z_bits(numberOfBits);
+    BigInt myBigNum(gmpBigNum.get_str(16));
+
+    BigInt setted(myBigNum.wordLen(), 1);
+    for (size_t i = 0; i < myBigNum.bitsLen(); ++i) {
+        ASSERT_EQ(myBigNum.getBitAt(i), (gmpBigNum >> i) & 1);
+        setted.setBitAt(i, myBigNum.getBitAt(i));
+    }
+    ASSERT_TRUE(setted == myBigNum);
+}
+
+TEST(BigIntFunct, MoreThanLessThanEquals)
+{
+    constexpr size_t numberOfBits = 256;
+    gmp_randclass randomMachine(gmp_randinit_default);
+    for (size_t i = 0; i < 500; ++i) {
+        mpz_class left = randomMachine.get_z_bits(numberOfBits);
+        mpz_class right = randomMachine.get_z_bits(numberOfBits);
+
+        BigInt myLeft(left.get_str(16));
+        BigInt myRight(right.get_str(16));
+
+        ASSERT_EQ(left == right, myLeft == myRight);
+        ASSERT_EQ(left < right, myLeft < myRight);
+        ASSERT_EQ(left > right, myLeft > myRight);
     }
 }
