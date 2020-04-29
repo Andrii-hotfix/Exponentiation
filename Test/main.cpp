@@ -78,7 +78,7 @@ TEST(BigIntFunct, Complementary)
     for (size_t i = 124; i < 2048; ++i) {
         // As mpz_class does not have any simple complementary
         // (mpz_t can be any bits long, so they care about leading zeros, but I don't :D).
-        // So I can check this funct only by bitwise &, which is also may be unreliable, but
+        // So I can check this funct only using bitwise &, which is also may be unreliable, but
         // checked previously with mpz_t thus must be reliable anyway.
         mpz_class gmpRand = randomMachine.get_z_bits(i);
         BigInt bigNumRand(gmpRand.get_str(16));
@@ -145,7 +145,7 @@ TEST(BigIntFunct, BitPositionGetSet)
     ASSERT_TRUE(setted == myBigNum);
 }
 
-TEST(BigIntFunct, MoreThanLessThanEquals)
+TEST(BigIntFunct, Comparisons)
 {
     constexpr size_t numberOfBits = 256;
     gmp_randclass randomMachine(gmp_randinit_default);
@@ -158,6 +158,27 @@ TEST(BigIntFunct, MoreThanLessThanEquals)
 
         ASSERT_EQ(left == right, myLeft == myRight);
         ASSERT_EQ(left < right, myLeft < myRight);
+        ASSERT_EQ(left <= right, myLeft <= myRight);
         ASSERT_EQ(left > right, myLeft > myRight);
+        ASSERT_EQ(left >= right, myLeft >= myRight);
+    }
+}
+
+TEST(BigIntFunct, Addition)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    std::default_random_engine gen;
+    for (size_t i = 0; i < 500; ++i) {
+        std::uniform_int_distribution<size_t> distr(0, i);
+        mpz_class left = randomMachine.get_z_bits(distr(gen));
+        mpz_class right = randomMachine.get_z_bits(distr(gen));
+
+        BigInt myLeft(left.get_str(16));
+        BigInt myRight(right.get_str(16));
+
+        mpz_class sum = left + right;
+        BigInt mySum = myLeft + myRight;
+
+        ASSERT_TRUE(std::string(sum.get_str(16)) == mySum.getStr(BigInt::Hex));
     }
 }

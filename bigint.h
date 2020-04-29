@@ -38,12 +38,16 @@ public:
     BigInt operator~() const;
     BigInt operator>>(const size_t numOfShifts) const;
     BigInt operator<<(const size_t numOfShifts) const;
-    bool operator[](size_t index) const;
+
+    BigInt operator+(const BigInt &right) const;
+    BigInt operator-(const BigInt &right) const;
     std::pair<BigInt, BigInt> divisionRemainder(const BigInt &denominator);
 
     bool operator==(const BigInt &right) const;
     bool operator<(const BigInt &right) const;
+    bool operator<=(const BigInt &right) const;
     bool operator>(const BigInt &right) const;
+    bool operator>=(const BigInt &right) const;
 
     void operator*=(const BigInt &right);
     void operator%=(const BigInt &right);

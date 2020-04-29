@@ -7,10 +7,9 @@
 #include <algorithm>
 #include <cmath>
 
-BigInt::BigInt(size_t size, word val)
+BigInt::BigInt(size_t size, word val = 0)
 {
     _heap.resize(size, val);
-    removeLeadingZeros();
 }
 
 BigInt::BigInt(const std::string &asStr)
@@ -139,6 +138,46 @@ BigInt BigInt::operator<<(const size_t numOfShifts) const
     return BigInt(std::move(resultHeap));
 }
 
+BigInt BigInt::operator+(const BigInt &right) const
+{
+    bool carry = false;
+    BigInt result(std::max(wordLen(), right.wordLen()) + 1, 0);
+    for (size_t i = 0; i < std::min(bitsLen(), right.bitsLen()); ++i) {
+        bool leftBit = getBitAt(i);
+        bool rightBit = right.getBitAt(i);
+        result.setBitAt(i, leftBit ^ rightBit ^ carry);
+        carry = (leftBit & rightBit) | (leftBit & carry) | (rightBit & carry);
+    }
+
+    for (size_t i = std::min(bitsLen(), right.bitsLen()); i < bitsLen(); ++i) {
+        bool leftBit = getBitAt(i);
+        result.setBitAt(i, leftBit ^ carry);
+        carry &= leftBit;
+    }
+
+    for (size_t i = std::min(bitsLen(), right.bitsLen()); i < right.bitsLen(); ++i) {
+        bool rightBit = right.getBitAt(i);
+        result.setBitAt(i, rightBit ^ carry);
+        carry &= rightBit;
+    }
+
+    result.setBitAt(std::max(bitsLen(), right.bitsLen()), carry);
+
+    result.removeLeadingZeros();
+    return result;
+}
+
+//BigInt BigInt::operator-(BigInt right) const
+//{
+//    BigInt left(*this);
+//    while (!right.isZero()) {
+//        BigInt borrow = (~left) ^ right;
+//        left = left ^ right;
+//        right = borrow << 1;
+//    }
+//    return left;
+//}
+
 bool BigInt::operator==(const BigInt &right) const
 {
     return BigInt(*this ^ right).isZero();
@@ -158,9 +197,19 @@ bool BigInt::operator<(const BigInt &right) const
     return false;
 }
 
+bool BigInt::operator<=(const BigInt &right) const
+{
+    return *this == right or *this < right;
+}
+
 bool BigInt::operator>(const BigInt &right) const
 {
     return !(*this < right) and !(*this == right);
+}
+
+bool BigInt::operator>=(const BigInt &right) const
+{
+    return *this == right or *this > right;
 }
 
 std::pair<BigInt, BigInt> BigInt::divisionRemainder(const BigInt &denominator)
@@ -171,6 +220,9 @@ std::pair<BigInt, BigInt> BigInt::divisionRemainder(const BigInt &denominator)
     for (size_t i = bitsLen(); i > 0; --i) {
         remainder = remainder << 1;
         remainder.setBitAt(0, getBitAt(i));
+        if (remainder >= denominator) {
+
+        }
     }
 }
 
@@ -223,7 +275,6 @@ void BigInt::setBitAt(size_t index, bool value)
         word mask = ~(word(1) << offset);
         _heap[wordNum] &= mask;
     }
-    removeLeadingZeros();
 }
 
 std::string BigInt::getDecStr() const
