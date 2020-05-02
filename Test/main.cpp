@@ -182,3 +182,26 @@ TEST(BigIntFunct, Addition)
         ASSERT_TRUE(std::string(sum.get_str(16)) == mySum.getStr(BigInt::Hex));
     }
 }
+
+TEST(BigIntFunct, Substraction)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    std::default_random_engine gen;
+    for (size_t i = 0; i < 500; ++i) {
+        std::uniform_int_distribution<size_t> distr(0, i);
+        mpz_class right = randomMachine.get_z_bits(distr(gen));
+        mpz_class left = right + randomMachine.get_z_bits(distr(gen));
+
+        BigInt myLeft(left.get_str(16));
+        BigInt myRight(right.get_str(16));
+
+        mpz_class diff = left - right;
+        try {
+            BigInt myDiff = myLeft - myRight;
+            ASSERT_TRUE(std::string(diff.get_str(16)) == myDiff.getStr(BigInt::Hex));
+        } catch (const std::exception &err) {
+            EXPECT_STREQ(err.what(), "This library can not hold negative values (yet)");
+            EXPECT_TRUE(left < right);
+        }
+    }
+}

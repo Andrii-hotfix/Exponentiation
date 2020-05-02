@@ -104,7 +104,11 @@ BigInt BigInt::operator~() const
     for (size_t i = 0; i < wordLen(); ++i)
         resultHeap[i] = ~_heap[i];
 
-    return BigInt(std::move(resultHeap));
+    BigInt result(std::move(resultHeap));
+    for (long i = wordLen() * 32; i > static_cast<long>(bitsLen()); --i)
+        result.setBitAt(i - 1, false);
+
+    return result;
 }
 
 BigInt BigInt::operator>>(const size_t numOfShifts) const
@@ -148,35 +152,48 @@ BigInt BigInt::operator+(const BigInt &right) const
         result.setBitAt(i, leftBit ^ rightBit ^ carry);
         carry = (leftBit & rightBit) | (leftBit & carry) | (rightBit & carry);
     }
-
     for (size_t i = std::min(bitsLen(), right.bitsLen()); i < bitsLen(); ++i) {
         bool leftBit = getBitAt(i);
         result.setBitAt(i, leftBit ^ carry);
         carry &= leftBit;
     }
-
     for (size_t i = std::min(bitsLen(), right.bitsLen()); i < right.bitsLen(); ++i) {
         bool rightBit = right.getBitAt(i);
         result.setBitAt(i, rightBit ^ carry);
         carry &= rightBit;
     }
-
+    result.bitsLen();
     result.setBitAt(std::max(bitsLen(), right.bitsLen()), carry);
 
     result.removeLeadingZeros();
     return result;
 }
 
-//BigInt BigInt::operator-(BigInt right) const
-//{
-//    BigInt left(*this);
-//    while (!right.isZero()) {
-//        BigInt borrow = (~left) ^ right;
-//        left = left ^ right;
-//        right = borrow << 1;
-//    }
-//    return left;
-//}
+BigInt BigInt::operator-(const BigInt &right) const
+{
+    if ((*this) < right)
+        throw std::logic_error("This library can not hold negative values (yet)");
+
+    if ((*this) == right)
+        return BigInt(1, 0);
+
+    bool carry = false;
+    BigInt result(std::max(wordLen(), right.wordLen()) + 1, 0);
+    for (size_t i = 0; i < std::min(bitsLen(), right.bitsLen()); ++i) {
+        bool leftBit = getBitAt(i);
+        bool rightBit = right.getBitAt(i);
+        result.setBitAt(i, leftBit ^ rightBit ^ carry);
+        carry = (!leftBit & rightBit) | (!leftBit & carry) | (leftBit & rightBit & carry);
+    }
+    for (size_t i = std::min(bitsLen(), right.bitsLen()); i < bitsLen(); ++i) {
+        bool leftBit = getBitAt(i);
+        result.setBitAt(i, leftBit ^ carry);
+        carry &= !leftBit;
+    }
+
+    result.removeLeadingZeros();
+    return result;
+}
 
 bool BigInt::operator==(const BigInt &right) const
 {
@@ -241,6 +258,11 @@ size_t BigInt::bitsLen() const
     size_t numberOfbits = (wordLen()) * 32;
 
     word lastWord = _heap.back();
+    for (long i = _heap.size(); i > 1 and _heap[i - 1] == 0; --i) {
+        numberOfbits -= 32;
+        lastWord = _heap[i - 2];
+    }
+
     for (size_t i = 0; i < 32 and (lastWord & ~(~word(0) >> 1)) == 0; ++i) {
         lastWord <<= 1;
         --numberOfbits;
@@ -262,7 +284,7 @@ bool BigInt::getBitAt(size_t index) const
 
 void BigInt::setBitAt(size_t index, bool value)
 {
-    if (index > bitsLen())
+    if (index >= _heap.size() * 32)
         throw std::logic_error("Bad index");
 
     constexpr size_t bitsInWord = 32;
