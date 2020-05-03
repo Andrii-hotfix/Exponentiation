@@ -205,3 +205,26 @@ TEST(BigIntFunct, Substraction)
         }
     }
 }
+
+TEST(BigIntFunct, DivisionRemainder)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    std::default_random_engine gen;
+    for (size_t i = 2; i < 500; ++i) {
+        std::uniform_int_distribution<size_t> distr(1, i);
+        mpz_class left = randomMachine.get_z_bits(distr(gen));
+        mpz_class right = randomMachine.get_z_bits(distr(gen));
+        if (right == 0)
+            continue;
+        mpz_class quotient, remainder;
+
+        BigInt myLeft(left.get_str(16));
+        BigInt myRight(right.get_str(16));
+
+        mpz_fdiv_qr(quotient.get_mpz_t(), remainder.get_mpz_t(), left.get_mpz_t(), right.get_mpz_t());
+        auto[myQuotient, myRemainder] = myLeft.divisionRemainder(myRight);
+
+        ASSERT_TRUE(std::string(quotient.get_str(16)) == myQuotient.getStr(BigInt::Hex));
+        ASSERT_TRUE(std::string(remainder.get_str(16)) == myRemainder.getStr(BigInt::Hex));
+    }
+}

@@ -6,6 +6,7 @@
 #include <array>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 BigInt::BigInt(size_t size, word val = 0)
 {
@@ -216,41 +217,34 @@ bool BigInt::operator<(const BigInt &right) const
 
 bool BigInt::operator<=(const BigInt &right) const
 {
-    return *this == right or *this < right;
+    return (*this == right) or (*this < right);
 }
 
 bool BigInt::operator>(const BigInt &right) const
 {
-    return !(*this < right) and !(*this == right);
+    return not (*this < right) and not (*this == right);
 }
 
 bool BigInt::operator>=(const BigInt &right) const
 {
-    return *this == right or *this > right;
+    return (*this == right) or (*this > right);
 }
 
 std::pair<BigInt, BigInt> BigInt::divisionRemainder(const BigInt &denominator)
 {
-    BigInt quotient;
-    BigInt remainder;
-
-    for (size_t i = bitsLen(); i > 0; --i) {
+    BigInt quotient(1, 0);
+    BigInt remainder(1, 0);
+    for (long i = bitsLen() - 1; i >= 0; --i) {
         remainder = remainder << 1;
         remainder.setBitAt(0, getBitAt(i));
         if (remainder >= denominator) {
-
+            remainder = remainder - denominator;
+            quotient.setBitAt(i, true);
         }
     }
-}
-
-void BigInt::smallDivisionAlg(word divisor, word& quotient, word& remainder)
-{
-    quotient = 0;
-    remainder = 0;
-
-    for (size_t i = bitsLen() - 1; i > 0; ++i) {
-        remainder <<= 1;
-    }
+    quotient.removeLeadingZeros();
+    remainder.removeLeadingZeros();
+    return {quotient, remainder};
 }
 
 size_t BigInt::bitsLen() const
@@ -285,7 +279,8 @@ bool BigInt::getBitAt(size_t index) const
 void BigInt::setBitAt(size_t index, bool value)
 {
     if (index >= _heap.size() * 32)
-        throw std::logic_error("Bad index");
+        _heap.resize(_heap.size() + std::ceil((index + 1) / 32));
+//        throw std::logic_error("Bad index");
 
     constexpr size_t bitsInWord = 32;
     auto wordNum = static_cast<size_t>(std::floor(index / bitsInWord));

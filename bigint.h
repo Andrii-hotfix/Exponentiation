@@ -54,7 +54,6 @@ public:
     void operator&=(const BigInt &right);
     void operator|=(const BigInt &right);
 
-    void smallDivisionAlg(word divisor, word& quotient, word& remainder);
     size_t bitsLen() const;
     bool getBitAt(size_t index) const;
     void setBitAt(size_t index, bool value);
