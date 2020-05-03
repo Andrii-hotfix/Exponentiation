@@ -301,16 +301,22 @@ std::string BigInt::getDecStr() const
     std::string result;
     BigInt base(1, 1000000000);
     BigInt numerator = *this;
+    std::vector<std::string> parts;
+    parts.reserve(_heap.size());
 
     std::pair<BigInt, BigInt> quotientRemainder;
     for (size_t i = 0; numerator >= base; ++i) {
         quotientRemainder = numerator.divisionRemainder(base);
-        result = fmt::format("{:0>9d}", quotientRemainder.second.getHeap().front()) + result;
+        parts.emplace_back(fmt::format("{:0>9d}", quotientRemainder.second.getHeap().front()));
         numerator = quotientRemainder.first;
     }
     quotientRemainder = numerator.divisionRemainder(base);
-    result = fmt::format("{0:d}", quotientRemainder.second.getHeap().front()) + result;
+    parts.emplace_back(fmt::format("{0:d}", quotientRemainder.second.getHeap().front()));
+    std::reverse(parts.begin(), parts.end());
+    for (const std::string &part : parts)
+        result += part;
     return result;
+
 }
 
 std::string BigInt::getHexcStr() const
