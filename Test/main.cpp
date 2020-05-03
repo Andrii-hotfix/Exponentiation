@@ -17,6 +17,7 @@ TEST(BigIntFunct, SimpleStrings)
 
         ASSERT_EQ(gmpBigNum.get_str(2).size(), myBigNum.bitsLen());
         ASSERT_TRUE(std::string(gmpBigNum.get_str(2)) == myBigNum.getStr(BigInt::Bin));
+        ASSERT_TRUE(std::string(gmpBigNum.get_str(10)) == myBigNum.getStr(BigInt::Dec));
     }
 }
 

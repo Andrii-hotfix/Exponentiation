@@ -230,7 +230,7 @@ bool BigInt::operator>=(const BigInt &right) const
     return (*this == right) or (*this > right);
 }
 
-std::pair<BigInt, BigInt> BigInt::divisionRemainder(const BigInt &denominator)
+std::pair<BigInt, BigInt> BigInt::divisionRemainder(const BigInt &denominator) const
 {
     BigInt quotient(1, 0);
     BigInt remainder(1, 0);
@@ -249,6 +249,9 @@ std::pair<BigInt, BigInt> BigInt::divisionRemainder(const BigInt &denominator)
 
 size_t BigInt::bitsLen() const
 {
+    if (_heap.empty())
+        return 0;
+
     size_t numberOfbits = (wordLen()) * 32;
 
     word lastWord = _heap.back();
@@ -280,7 +283,6 @@ void BigInt::setBitAt(size_t index, bool value)
 {
     if (index >= _heap.size() * 32)
         _heap.resize(_heap.size() + std::ceil((index + 1) / 32));
-//        throw std::logic_error("Bad index");
 
     constexpr size_t bitsInWord = 32;
     auto wordNum = static_cast<size_t>(std::floor(index / bitsInWord));
@@ -297,11 +299,18 @@ void BigInt::setBitAt(size_t index, bool value)
 std::string BigInt::getDecStr() const
 {
     std::string result;
-    std::string chunk = std::to_string(_heap.back());
-//    word base = 0;
-//    for (size_t i = 0; base < 10; ++i)
-//        base =
-    return "";
+    BigInt base(1, 1000000000);
+    BigInt numerator = *this;
+
+    std::pair<BigInt, BigInt> quotientRemainder;
+    for (size_t i = 0; numerator >= base; ++i) {
+        quotientRemainder = numerator.divisionRemainder(base);
+        result = fmt::format("{:0>9d}", quotientRemainder.second.getHeap().front()) + result;
+        numerator = quotientRemainder.first;
+    }
+    quotientRemainder = numerator.divisionRemainder(base);
+    result = fmt::format("{0:d}", quotientRemainder.second.getHeap().front()) + result;
+    return result;
 }
 
 std::string BigInt::getHexcStr() const

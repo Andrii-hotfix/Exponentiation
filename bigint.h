@@ -41,7 +41,7 @@ public:
 
     BigInt operator+(const BigInt &right) const;
     BigInt operator-(const BigInt &right) const;
-    std::pair<BigInt, BigInt> divisionRemainder(const BigInt &denominator);
+    std::pair<BigInt, BigInt> divisionRemainder(const BigInt &denominator) const;
 
     bool operator==(const BigInt &right) const;
     bool operator<(const BigInt &right) const;
