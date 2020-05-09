@@ -23,7 +23,6 @@ public:
     BigInt(const std::string &asStr);
     BigInt(std::vector<word>&& heap);
     BigInt(const BigInt& left) = default;
-    // TODO copy constr?
 
     void setHexStr(const std::string &asStr);
 
@@ -37,7 +36,9 @@ public:
     BigInt operator^(const BigInt &right) const;
     BigInt operator~() const;
     BigInt operator>>(const size_t numOfShifts) const;
+    BigInt operator>>=(const size_t mumOfShifts) const;
     BigInt operator<<(const size_t numOfShifts) const;
+    void operator<<=(const size_t numOfShifts);
 
     BigInt operator+(const BigInt &right) const;
     BigInt operator-(const BigInt &right) const;

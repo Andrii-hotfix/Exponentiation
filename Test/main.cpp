@@ -125,7 +125,7 @@ TEST(BigIntFunct, ShiftLeft)
         for (int j = 0; j < 10; ++j) {
             size_t randomShift = distr(gen);
             gmpBigNum <<= randomShift;
-            myBigNum = myBigNum << randomShift;
+            myBigNum <<= randomShift;
 
             ASSERT_TRUE(std::string(gmpBigNum.get_str(16)) == myBigNum.getStr(BigInt::Hex));
         }
@@ -228,5 +228,24 @@ TEST(BigIntFunct, DivisionRemainder)
 
         ASSERT_TRUE(std::string(quotient.get_str(16)) == myQuotient.getStr(BigInt::Hex));
         ASSERT_TRUE(std::string(remainder.get_str(16)) == myRemainder.getStr(BigInt::Hex));
+    }
+}
+
+TEST(BigIntFunct, Multiplication)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    std::default_random_engine gen;
+    for (size_t i = 2; i < 500; ++i) {
+        std::uniform_int_distribution<size_t> distr(1, i);
+        mpz_class left = randomMachine.get_z_bits(distr(gen));
+        mpz_class right = randomMachine.get_z_bits(distr(gen));
+
+        mpz_class product = left * right;
+
+        BigInt myLeft(left.get_str(16));
+        BigInt myRight(right.get_str(16));
+        BigInt myProduct = myLeft * myRight;
+
+        ASSERT_TRUE(std::string(product.get_str(16)) == myProduct.getStr(BigInt::Hex));
     }
 }

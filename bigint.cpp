@@ -27,7 +27,7 @@ BigInt::BigInt(std::vector<word>&& heap)
 void BigInt::setHexStr(const std::string &asStr)
 {
     _heap.clear();
-    // Add trailing 0 digits if any needed
+    // Add leading 0 digits if any needed
     std::string trailingNulls;
     for (size_t i = 0; i < (8 - asStr.size() % 8) % 8; ++i)
         trailingNulls += '0';
@@ -42,7 +42,6 @@ void BigInt::setHexStr(const std::string &asStr)
 
 std::string BigInt::getStr(BigInt::NumberBase repr) const
 {
-    std::string result;
     switch (repr) {
     case NumberBase::Bin:
         return getBinStr();
@@ -56,6 +55,25 @@ std::string BigInt::getStr(BigInt::NumberBase repr) const
 const std::vector<word>& BigInt::readHeap() const
 {
     return _heap;
+}
+
+BigInt BigInt::operator*(const BigInt &right) const
+{
+    constexpr word maxWord = (1 << 16) - 1;
+    if (*this <= BigInt(1, maxWord) and (right <= BigInt(1, maxWord)))
+        return BigInt(1, _heap.front() * right.getHeap().front());
+
+    size_t n = std::floor(std::max(bitsLen(), right.bitsLen()) / 2);
+    BigInt mask = (BigInt(1, 1) << n) - BigInt(1, 1);
+    BigInt leftHigh = *this >> n;
+    BigInt leftLow = *this & mask;
+    BigInt rightHigh = right >> n;
+    BigInt rightLow = right & mask;
+
+    BigInt highPord = leftHigh * rightHigh;
+    BigInt lowProd = leftLow * rightLow;
+    BigInt crossProd = ((leftHigh + leftLow) * (rightHigh + rightLow)) - highPord - lowProd;
+    return (((highPord << n) + crossProd) << n) + lowProd;
 }
 
 BigInt BigInt::operator&(const BigInt &right) const
@@ -315,8 +333,8 @@ std::string BigInt::getDecStr() const
     std::reverse(parts.begin(), parts.end());
     for (const std::string &part : parts)
         result += part;
-    return result;
 
+    return result;
 }
 
 std::string BigInt::getHexcStr() const
