@@ -84,11 +84,14 @@ BigInt BigInt::operator*(const BigInt &right) const
 
 BigInt BigInt::operator%(const BigInt &modulo) const
 {
-    if (modulo.isZero() or isZero())
+    if (isZero())
         return 0;
 
-    if (*this < modulo)
+    if (modulo.isZero())
         return *this;
+
+    if (*this <  maxWord and modulo < maxWord)
+        return _heap[0] % modulo.getHeap()[0];
 
     BigInt remainder = 0;
     BigInt bPowerT = BigInt(1) << modulo.bitsLen();
@@ -353,6 +356,60 @@ std::pair<BigInt, BigInt> BigInt::divisionRemainder(const BigInt &denominator) c
     quotient.removeLeadingZeros();
     remainder.removeLeadingZeros();
     return {quotient, remainder};
+}
+
+BigInt BigInt::modExpLrKary(word exponent, const BigInt &modulo, word k)
+{
+    word b = 2 << (k - 1);
+
+    // Compute the table of exponents first
+    std::vector<BigInt> table(b, 1);
+    for (size_t i = 1; i < b; ++i)
+        table[i] = (table[i - 1] * (*this)) % modulo;
+
+    std::vector<BigInt> digitsOfModulo;
+    BigInt n = exponent;
+    while (not n.isZero()) {
+        auto[quotient, remainder] = n.divisionRemainder(b);
+        digitsOfModulo.emplace_back(std::move(remainder));
+        n = std::move(quotient);
+    }
+    std::reverse(digitsOfModulo.begin(), digitsOfModulo.end());
+    BigInt r = 1;
+    for (const BigInt& digit : digitsOfModulo) {
+        for (size_t i = 0; i < k; ++i)
+            r = (r * r) % n;
+
+        if (not digit.isZero())
+            r = r * table.at(digit.getHeap().front()) % n;
+    }
+        return r;
+}
+
+BigInt BigInt::binaryLRExp(const BigInt &exponent)
+{
+    BigInt result = 1;
+    for (size_t i = exponent.bitsLen(); i > 0; --i) {
+        result = result * result;
+        if (exponent.getBitAt(i - 1) == true)
+            result = result * (*this);
+    }
+    return result;
+}
+
+BigInt BigInt::binaryRLExp(const BigInt &exponent)
+{
+    BigInt a = 1;
+    BigInt s = *this;
+    BigInt e = exponent;
+    while (not e.isZero()) {
+        if (e.getBitAt(0) == true)
+            a = a * s;
+        e = e.divisionRemainder(BigInt(2)).first;
+        if (not e.isZero())
+            s = s * s;
+    }
+    return a;
 }
 
 size_t BigInt::bitsLen() const

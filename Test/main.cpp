@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <random>
 
-constexpr size_t maxTestedBitsSize = 2048;
+constexpr size_t maxTestedBitsSize = 1024;
 
 TEST(BigIntFunct, SimpleStrings)
 {
@@ -278,11 +278,12 @@ TEST(BigIntFunct, Reduction)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
     std::default_random_engine gen;
-    for (size_t i = 2; i < 500; ++i) {
+    for (size_t i = 2; i < maxTestedBitsSize; ++i) {
         std::uniform_int_distribution<size_t> distr(1, i);
         mpz_class left = randomMachine.get_z_bits(distr(gen));
         mpz_class right = randomMachine.get_z_bits(distr(gen));
 
+        // This checks needed to satisfy GMP lib constraints
         if (right == 0 or left == 0 or right == left) {
             --i;
             continue;
@@ -301,5 +302,54 @@ TEST(BigIntFunct, Reduction)
         BigInt myProduct = myLeft % myRight;
 
         ASSERT_TRUE(std::string(product.get_str(16)) == myProduct.getStr(BigInt::Hex));
+    }
+}
+
+
+TEST(BigIntFunct, binaryLRExp)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    std::default_random_engine gen;
+    constexpr word maxTestExponent = 500;
+    constexpr size_t iterations = 5;
+    for (size_t i = 1; i < iterations; ++i) {
+        std::uniform_int_distribution<size_t> bitsDistr(1, maxTestedBitsSize);
+        mpz_class base = randomMachine.get_z_bits(bitsDistr(gen));
+        mpz_class modulo = randomMachine.get_z_bits(bitsDistr(gen));
+        mpz_class result;
+        std::uniform_int_distribution<size_t> expDistr(1, maxTestExponent);
+        word exponent = expDistr(gen);
+
+        mpz_pow_ui(result.get_mpz_t(), base.get_mpz_t(), exponent);
+
+        BigInt myBase(base.get_str(16));
+        BigInt myModulo(modulo.get_str(16));
+        BigInt myResult = myBase.binaryLRExp(BigInt(exponent));
+
+        ASSERT_TRUE(std::string(result.get_str(16)) == myResult.getStr(BigInt::Hex));
+    }
+}
+
+TEST(BigIntFunct, binaryRLExp)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    std::default_random_engine gen;
+    constexpr word maxTestExponent = 500;
+    constexpr size_t iterations = 5;
+    for (size_t i = 1; i < iterations; ++i) {
+        std::uniform_int_distribution<size_t> bitsDistr(1, maxTestedBitsSize);
+        mpz_class base = randomMachine.get_z_bits(bitsDistr(gen));
+        mpz_class modulo = randomMachine.get_z_bits(bitsDistr(gen));
+        mpz_class result;
+        std::uniform_int_distribution<size_t> expDistr(1, maxTestExponent);
+        word exponent = expDistr(gen);
+
+        mpz_pow_ui(result.get_mpz_t(), base.get_mpz_t(), exponent);
+
+        BigInt myBase(base.get_str(16));
+        BigInt myModulo(modulo.get_str(16));
+        BigInt myResult = myBase.binaryRLExp(BigInt(exponent));
+
+        ASSERT_TRUE(std::string(result.get_str(16)) == myResult.getStr(BigInt::Hex));
     }
 }
