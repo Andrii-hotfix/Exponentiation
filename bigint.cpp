@@ -8,9 +8,15 @@
 #include <cmath>
 #include <iostream>
 
-BigInt::BigInt(size_t size, word val = 0)
+BigInt::BigInt(uint32_t value)
 {
-    _heap.resize(size, val);
+    _heap.clear();
+    _heap.emplace_back(value);
+}
+
+BigInt::BigInt(size_t size, uint32_t value)
+{
+    _heap.resize(size, value);
 }
 
 BigInt::BigInt(const std::string &asStr)
@@ -59,12 +65,12 @@ const std::vector<word>& BigInt::readHeap() const
 
 BigInt BigInt::operator*(const BigInt &right) const
 {
-    constexpr word maxWord = (1 << 16) - 1;
-    if (*this <= BigInt(1, maxWord) and (right <= BigInt(1, maxWord)))
+    constexpr word max16bitWord = (1 << 16) - 1;
+    if ((*this <= max16bitWord) and (right <= max16bitWord))
         return BigInt(1, _heap.front() * right.getHeap().front());
 
     size_t n = std::floor(std::max(bitsLen(), right.bitsLen()) / 2);
-    BigInt mask = (BigInt(1, 1) << n) - BigInt(1, 1);
+    const BigInt mask = (BigInt(1) << n) - 1;
     BigInt leftHigh = *this >> n;
     BigInt leftLow = *this & mask;
     BigInt rightHigh = right >> n;
@@ -75,6 +81,20 @@ BigInt BigInt::operator*(const BigInt &right) const
     BigInt crossProd = ((leftHigh + leftLow) * (rightHigh + rightLow)) - highPord - lowProd;
     return (((highPord << n) + crossProd) << n) + lowProd;
 }
+
+//BigInt BigInt::operator%(const BigInt &modulo) const
+//{
+//    if (modulo.isZero() or isZero())
+//        throw std::logic_error("Arguments must be non zero values.");
+
+//    if ((modulo & (modulo - BigInt(1, 1))).isZero())
+//        throw std::logic_error("Modulo can not be a power of 2");
+
+//    size_t shift = modulo.bitsLen() * 2;
+//    BigInt factor = BigInt(1, 1) << shift;
+//    BigInt t = (*this - ((*this * factor) >> shift) * modulo);
+//    return (t < modulo) ? t : (t - modulo);
+//}
 
 BigInt BigInt::operator&(const BigInt &right) const
 {
@@ -124,7 +144,7 @@ BigInt BigInt::operator~() const
         resultHeap[i] = ~_heap[i];
 
     BigInt result(std::move(resultHeap));
-    for (long i = wordLen() * 32; i > static_cast<long>(bitsLen()); --i)
+    for (long i = wordLen() * bitsInWord; i > static_cast<long>(bitsLen()); --i)
         result.setBitAt(i - 1, false);
 
     return result;
@@ -136,7 +156,7 @@ BigInt BigInt::operator>>(const size_t numOfShifts) const
     for (size_t shiftIteration = 0; shiftIteration < numOfShifts; ++shiftIteration) {
         resultHeap.front() >>= 1;
         for (size_t i = 1; i < _heap.size(); ++i) {
-            word carryMask = (word(1) & resultHeap[i]) << 31;
+            word carryMask = (word(1) & resultHeap[i]) << (bitsInWord - 1);
             resultHeap[i] >>= 1;
             resultHeap[i - 1] |= carryMask;
         }
@@ -150,7 +170,7 @@ BigInt BigInt::operator<<(const size_t numOfShifts) const
     for (size_t shiftIteration = 0; shiftIteration < numOfShifts; ++shiftIteration) {
         word carryMask = 0;
         for (size_t i = 0; i < resultHeap.size(); ++i) {
-            word newMask = ((~(~word(0) >> 1)) & resultHeap[i]) >> 31;
+            word newMask = ((~(~word(0) >> 1)) & resultHeap[i]) >> (bitsInWord - 1);
             resultHeap[i] <<= 1;
             resultHeap[i] |= carryMask;
             carryMask = newMask;
@@ -159,6 +179,21 @@ BigInt BigInt::operator<<(const size_t numOfShifts) const
             resultHeap.emplace_back(1);
     }
     return BigInt(std::move(resultHeap));
+}
+
+void BigInt::operator<<=(const size_t numOfShifts)
+{
+    for (size_t shiftIteration = 0; shiftIteration < numOfShifts; ++shiftIteration) {
+        word carryMask = 0;
+        for (size_t i = 0; i < _heap.size(); ++i) {
+            word newMask = ((~(~word(0) >> 1)) & _heap[i]) >> (bitsInWord - 1);
+            _heap[i] <<= 1;
+            _heap[i] |= carryMask;
+            carryMask = newMask;
+        }
+        if (carryMask)
+            _heap.emplace_back(1);
+    }
 }
 
 BigInt BigInt::operator+(const BigInt &right) const
@@ -190,11 +225,11 @@ BigInt BigInt::operator+(const BigInt &right) const
 
 BigInt BigInt::operator-(const BigInt &right) const
 {
-    if ((*this) < right)
-        throw std::logic_error("This library can not hold negative values (yet)");
+    if (*this < right)
+        throw std::logic_error("This library can not handle negative values (yet)");
 
-    if ((*this) == right)
-        return BigInt(1, 0);
+    if (*this == right)
+        return 0;
 
     bool carry = false;
     BigInt result(std::max(wordLen(), right.wordLen()) + 1, 0);
@@ -248,8 +283,51 @@ bool BigInt::operator>=(const BigInt &right) const
     return (*this == right) or (*this > right);
 }
 
+BigInt BigInt::gcd(const BigInt &right)
+{
+    BigInt resultingLeft = *this;
+    BigInt resultingRight = right;
+    word shift = 0;
+
+    if (resultingLeft.isZero())
+        return resultingRight;
+
+    if (resultingRight.isZero())
+        return resultingLeft;
+
+    while (((resultingLeft | resultingRight) & 1).isZero()) {
+        ++shift;
+        resultingLeft = resultingLeft >> 1;
+        resultingRight = resultingRight >> 1;
+    }
+
+    while ((resultingLeft & 1).isZero())
+        resultingLeft = resultingLeft >> 1;
+
+    do {
+        while ((resultingRight & 1).isZero())
+            resultingRight = resultingRight >> 1;
+
+        if (resultingLeft > resultingRight) {
+            BigInt tmp = resultingRight;
+            resultingRight = resultingLeft;
+            resultingLeft = tmp;
+        }
+
+        resultingRight = resultingRight - resultingLeft;
+    } while (not resultingRight.isZero());
+
+    return resultingLeft << shift;
+}
+
 std::pair<BigInt, BigInt> BigInt::divisionRemainder(const BigInt &denominator) const
 {
+    if (denominator.isZero())
+        throw std::logic_error("Division by zero is impossible");
+
+    if ((*this <= BigInt(1, maxWord)) and (denominator <= BigInt(1, maxWord)))
+        return {BigInt(1, static_cast<word>(_heap[0] / denominator.getHeap()[0])), BigInt(1, _heap[0] % denominator.getHeap()[0])};
+
     BigInt quotient(1, 0);
     BigInt remainder(1, 0);
     for (long i = bitsLen() - 1; i >= 0; --i) {
@@ -270,15 +348,15 @@ size_t BigInt::bitsLen() const
     if (_heap.empty())
         return 0;
 
-    size_t numberOfbits = (wordLen()) * 32;
+    size_t numberOfbits = (wordLen()) * bitsInWord;
 
     word lastWord = _heap.back();
     for (long i = _heap.size(); i > 1 and _heap[i - 1] == 0; --i) {
-        numberOfbits -= 32;
+        numberOfbits -= bitsInWord;
         lastWord = _heap[i - 2];
     }
 
-    for (size_t i = 0; i < 32 and (lastWord & ~(~word(0) >> 1)) == 0; ++i) {
+    for (size_t i = 0; i < bitsInWord and (lastWord & ~(~word(0) >> 1)) == 0; ++i) {
         lastWord <<= 1;
         --numberOfbits;
     }
@@ -290,7 +368,6 @@ bool BigInt::getBitAt(size_t index) const
     if (index > bitsLen())
         throw std::logic_error("Bad index");
 
-    constexpr size_t bitsInWord = 32;
     auto wordNum = static_cast<size_t>(std::floor(index / bitsInWord));
     size_t offset = index % bitsInWord;
 
@@ -299,10 +376,9 @@ bool BigInt::getBitAt(size_t index) const
 
 void BigInt::setBitAt(size_t index, bool value)
 {
-    if (index >= _heap.size() * 32)
-        _heap.resize(_heap.size() + std::ceil((index + 1) / 32));
+    if (index >= _heap.size() * bitsInWord)
+        _heap.resize(_heap.size() + std::ceil((index + 1) / bitsInWord));
 
-    constexpr size_t bitsInWord = 32;
     auto wordNum = static_cast<size_t>(std::floor(index / bitsInWord));
     size_t offset = index % bitsInWord;
     if (value) {

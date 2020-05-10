@@ -7,11 +7,13 @@
 #include <cstdlib>
 #include <random>
 
+constexpr size_t maxTestedBitsSize = 2048;
+
 TEST(BigIntFunct, SimpleStrings)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
 
-    for (size_t i = 124; i < 2048; ++i) {
+    for (size_t i = 124; i < maxTestedBitsSize; ++i) {
         mpz_class gmpBigNum = randomMachine.get_z_bits(i);
         BigInt myBigNum(gmpBigNum.get_str(16));
 
@@ -25,7 +27,7 @@ TEST(BigIntFunct, SimpleStrings)
 TEST(BigIntFunct, And)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
-    for (size_t i = 124; i < 2048; ++i) {
+    for (size_t i = 124; i < maxTestedBitsSize; ++i) {
         mpz_class gmpLeft = randomMachine.get_z_bits(i);
         mpz_class gmpRight = randomMachine.get_z_bits(i);
 
@@ -42,7 +44,7 @@ TEST(BigIntFunct, And)
 TEST(BigIntFunct, Or)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
-    for (size_t i = 124; i < 2048; ++i) {
+    for (size_t i = 124; i < maxTestedBitsSize; ++i) {
         mpz_class gmpLeft = randomMachine.get_z_bits(i);
         mpz_class gmpRight = randomMachine.get_z_bits(i);
 
@@ -59,7 +61,7 @@ TEST(BigIntFunct, Or)
 TEST(BigIntFunct, Xor)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
-    for (size_t i = 124; i < 2048; ++i) {
+    for (size_t i = 124; i < maxTestedBitsSize; ++i) {
         mpz_class gmpLeft = randomMachine.get_z_bits(i);
         mpz_class gmpRight = randomMachine.get_z_bits(i);
 
@@ -77,7 +79,7 @@ TEST(BigIntFunct, Xor)
 TEST(BigIntFunct, Complementary)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
-    for (size_t i = 124; i < 2048; ++i) {
+    for (size_t i = 124; i < maxTestedBitsSize; ++i) {
         // As mpz_class does not have any simple complementary
         // (mpz_t can be any bits long, so they care about leading zeros, but I don't :D).
         // So I can check this funct only using bitwise &, which is also may be unreliable, but
@@ -95,7 +97,7 @@ TEST(BigIntFunct, ShiftRight)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
 
-    for (size_t i = 124; i < 2048; ++i) {
+    for (size_t i = 124; i < maxTestedBitsSize; ++i) {
         mpz_class gmpBigNum = randomMachine.get_z_bits(i);
         BigInt myBigNum(gmpBigNum.get_str(16));
 
@@ -116,7 +118,7 @@ TEST(BigIntFunct, ShiftLeft)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
 
-    for (size_t i = 124; i < 2048; ++i) {
+    for (size_t i = 124; i < maxTestedBitsSize; ++i) {
         mpz_class gmpBigNum = randomMachine.get_z_bits(i);
         BigInt myBigNum(gmpBigNum.get_str(16));
 
@@ -151,7 +153,7 @@ TEST(BigIntFunct, Comparisons)
 {
     constexpr size_t numberOfBits = 256;
     gmp_randclass randomMachine(gmp_randinit_default);
-    for (size_t i = 0; i < 500; ++i) {
+    for (size_t i = 0; i < maxTestedBitsSize; ++i) {
         mpz_class left = randomMachine.get_z_bits(numberOfBits);
         mpz_class right = randomMachine.get_z_bits(numberOfBits);
 
@@ -170,7 +172,7 @@ TEST(BigIntFunct, Addition)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
     std::default_random_engine gen;
-    for (size_t i = 0; i < 500; ++i) {
+    for (size_t i = 0; i < maxTestedBitsSize; ++i) {
         std::uniform_int_distribution<size_t> distr(0, i);
         mpz_class left = randomMachine.get_z_bits(distr(gen));
         mpz_class right = randomMachine.get_z_bits(distr(gen));
@@ -189,7 +191,7 @@ TEST(BigIntFunct, Substraction)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
     std::default_random_engine gen;
-    for (size_t i = 0; i < 500; ++i) {
+    for (size_t i = 0; i < maxTestedBitsSize; ++i) {
         std::uniform_int_distribution<size_t> distr(0, i);
         mpz_class right = randomMachine.get_z_bits(distr(gen));
         mpz_class left = right + randomMachine.get_z_bits(distr(gen));
@@ -212,7 +214,7 @@ TEST(BigIntFunct, DivisionRemainder)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
     std::default_random_engine gen;
-    for (size_t i = 2; i < 500; ++i) {
+    for (size_t i = 2; i < maxTestedBitsSize; ++i) {
         std::uniform_int_distribution<size_t> distr(1, i);
         mpz_class left = randomMachine.get_z_bits(distr(gen));
         mpz_class right = randomMachine.get_z_bits(distr(gen));
@@ -235,7 +237,7 @@ TEST(BigIntFunct, Multiplication)
 {
     gmp_randclass randomMachine(gmp_randinit_default);
     std::default_random_engine gen;
-    for (size_t i = 2; i < 500; ++i) {
+    for (size_t i = 2; i < maxTestedBitsSize; ++i) {
         std::uniform_int_distribution<size_t> distr(1, i);
         mpz_class left = randomMachine.get_z_bits(distr(gen));
         mpz_class right = randomMachine.get_z_bits(distr(gen));
@@ -249,3 +251,56 @@ TEST(BigIntFunct, Multiplication)
         ASSERT_TRUE(std::string(product.get_str(16)) == myProduct.getStr(BigInt::Hex));
     }
 }
+
+TEST(BigIntFunct, GCD)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    std::default_random_engine gen;
+    for (size_t i = 2; i < maxTestedBitsSize; ++i) {
+        std::uniform_int_distribution<size_t> distr(1, i);
+        mpz_class left = randomMachine.get_z_bits(distr(gen));
+        mpz_class right = randomMachine.get_z_bits(distr(gen));
+        mpz_class g;
+        mpz_class s;
+        mpz_class t;
+
+        mpz_gcdext(g.get_mpz_t(), s.get_mpz_t(), t.get_mpz_t(), left.get_mpz_t(), right.get_mpz_t());
+
+        BigInt myLeft(left.get_str(16));
+        BigInt myRight(right.get_str(16));
+        BigInt myG = myLeft.gcd(myRight);
+
+        ASSERT_TRUE(std::string(g.get_str(16)) == myG.getStr(BigInt::Hex));
+    }
+}
+
+//TEST(BigIntFunct, Reduction)
+//{
+//    gmp_randclass randomMachine(gmp_randinit_default);
+//    std::default_random_engine gen;
+//    for (size_t i = 2; i < 500; ++i) {
+//        std::uniform_int_distribution<size_t> distr(1, i);
+//        mpz_class left = randomMachine.get_z_bits(distr(gen));
+//        mpz_class right = randomMachine.get_z_bits(distr(gen));
+
+////        if ((right & (right - 1)) == 0 and not (left > 0) and not (left < right))
+//        if (right == 0 or left == 0 or right == left) {
+//            --i;
+//            continue;
+//        }
+
+//        if (right < left) {
+//            mpz_class tmp = right;
+//            right = left;
+//            left = tmp;
+//        }
+
+//        mpz_class product = left % right;
+
+//        BigInt myLeft(left.get_str(16));
+//        BigInt myRight(right.get_str(16));
+//        BigInt myProduct = myLeft % myRight;
+
+//        ASSERT_TRUE(std::string(product.get_str(16)) == myProduct.getStr(BigInt::Hex));
+//    }
+//}

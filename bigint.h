@@ -4,9 +4,10 @@
 #include <vector>
 #include <string>
 #include <cstdint>
-#include <bitset>
 
 using word = uint32_t;
+constexpr size_t bitsInWord = 32;
+constexpr word maxWord = ~word(0);
 
 class BigInt
 {
@@ -19,7 +20,8 @@ public:
     };
 
     BigInt() = default;
-    BigInt(size_t size, word val);
+    BigInt(word value);
+    BigInt(size_t size, word value);
     BigInt(const std::string &asStr);
     BigInt(std::vector<word>&& heap);
     BigInt(const BigInt& left) = default;
@@ -30,7 +32,7 @@ public:
     const std::vector<word>& readHeap() const;
 
     BigInt operator*(const BigInt &right) const;
-    BigInt operator%(const BigInt &right) const;
+//    BigInt operator%(const BigInt &modulo) const;
     BigInt operator&(const BigInt &right) const;
     BigInt operator|(const BigInt &right) const;
     BigInt operator^(const BigInt &right) const;
@@ -52,8 +54,10 @@ public:
 
     void operator*=(const BigInt &right);
     void operator%=(const BigInt &right);
-    void operator&=(const BigInt &right);
+//    void operator&=(const BigInt &right);
     void operator|=(const BigInt &right);
+
+    BigInt gcd(const BigInt &right);
 
     size_t bitsLen() const;
     bool getBitAt(size_t index) const;
@@ -64,7 +68,7 @@ public:
         return _heap.size();
     }
 
-    inline bool isZero()
+    inline bool isZero() const
     {
         return _heap.size() == 1 and _heap.front() == 0;
     }
@@ -91,13 +95,6 @@ private:
     std::string getDecStr() const;
     std::string getHexcStr() const;
     std::string getBinStr() const;
-//std::vector<uint8_t> str2Bytes(const std::string byteStr)
-//{
-//    std::vector<uint8_t> bytes;
-//    for (size_t i = 0, j = 0; i < byteStr.size(); i += 2, ++j)
-//        bytes.push_back(static_cast<uint8_t>(stoul(byteStr.substr(i, 2), nullptr, 16)));
-//    return bytes;
-//}
     std::vector<word> _heap;
 };
 
