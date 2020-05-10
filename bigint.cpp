@@ -82,19 +82,31 @@ BigInt BigInt::operator*(const BigInt &right) const
     return (((highPord << n) + crossProd) << n) + lowProd;
 }
 
-//BigInt BigInt::operator%(const BigInt &modulo) const
-//{
-//    if (modulo.isZero() or isZero())
-//        throw std::logic_error("Arguments must be non zero values.");
+BigInt BigInt::operator%(const BigInt &modulo) const
+{
+    if (modulo.isZero() or isZero())
+        return 0;
 
-//    if ((modulo & (modulo - BigInt(1, 1))).isZero())
-//        throw std::logic_error("Modulo can not be a power of 2");
+    if (*this < modulo)
+        return *this;
 
-//    size_t shift = modulo.bitsLen() * 2;
-//    BigInt factor = BigInt(1, 1) << shift;
-//    BigInt t = (*this - ((*this * factor) >> shift) * modulo);
-//    return (t < modulo) ? t : (t - modulo);
-//}
+    BigInt remainder = 0;
+    BigInt bPowerT = BigInt(1) << modulo.bitsLen();
+    BigInt c = bPowerT - modulo;
+    auto[q0, r0] = divisionRemainder(bPowerT);
+    BigInt q1;
+    remainder = r0;
+    BigInt r1;
+    for (size_t i = 0; q0 > 0; ++i) {
+        q1 = (q0 * c).divisionRemainder(bPowerT).first;
+        r1 = q0 * c  - q1 * bPowerT;
+        remainder = remainder + r0;
+    }
+    while (remainder >= modulo)
+        remainder = remainder - modulo;
+
+    return remainder;
+}
 
 BigInt BigInt::operator&(const BigInt &right) const
 {

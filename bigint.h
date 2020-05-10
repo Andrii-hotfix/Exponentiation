@@ -32,7 +32,7 @@ public:
     const std::vector<word>& readHeap() const;
 
     BigInt operator*(const BigInt &right) const;
-//    BigInt operator%(const BigInt &modulo) const;
+    BigInt operator%(const BigInt &modulo) const;
     BigInt operator&(const BigInt &right) const;
     BigInt operator|(const BigInt &right) const;
     BigInt operator^(const BigInt &right) const;

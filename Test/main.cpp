@@ -274,33 +274,32 @@ TEST(BigIntFunct, GCD)
     }
 }
 
-//TEST(BigIntFunct, Reduction)
-//{
-//    gmp_randclass randomMachine(gmp_randinit_default);
-//    std::default_random_engine gen;
-//    for (size_t i = 2; i < 500; ++i) {
-//        std::uniform_int_distribution<size_t> distr(1, i);
-//        mpz_class left = randomMachine.get_z_bits(distr(gen));
-//        mpz_class right = randomMachine.get_z_bits(distr(gen));
+TEST(BigIntFunct, Reduction)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    std::default_random_engine gen;
+    for (size_t i = 2; i < 500; ++i) {
+        std::uniform_int_distribution<size_t> distr(1, i);
+        mpz_class left = randomMachine.get_z_bits(distr(gen));
+        mpz_class right = randomMachine.get_z_bits(distr(gen));
 
-////        if ((right & (right - 1)) == 0 and not (left > 0) and not (left < right))
-//        if (right == 0 or left == 0 or right == left) {
-//            --i;
-//            continue;
-//        }
+        if (right == 0 or left == 0 or right == left) {
+            --i;
+            continue;
+        }
 
-//        if (right < left) {
-//            mpz_class tmp = right;
-//            right = left;
-//            left = tmp;
-//        }
+        if (right < left) {
+            mpz_class tmp = right;
+            right = left;
+            left = tmp;
+        }
 
-//        mpz_class product = left % right;
+        mpz_class product = left % right;
 
-//        BigInt myLeft(left.get_str(16));
-//        BigInt myRight(right.get_str(16));
-//        BigInt myProduct = myLeft % myRight;
+        BigInt myLeft(left.get_str(16));
+        BigInt myRight(right.get_str(16));
+        BigInt myProduct = myLeft % myRight;
 
-//        ASSERT_TRUE(std::string(product.get_str(16)) == myProduct.getStr(BigInt::Hex));
-//    }
-//}
+        ASSERT_TRUE(std::string(product.get_str(16)) == myProduct.getStr(BigInt::Hex));
+    }
+}
