@@ -11,6 +11,3 @@ SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -lgmp -lgmpxx")
 target_link_libraries(test-exponentiation
                       Exponentiation
                       GTest::GTest GTest::Main)
-
-#set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgmpxx")
-

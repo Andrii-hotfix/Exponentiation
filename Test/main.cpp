@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <random>
 
-constexpr size_t maxTestedBitsSize = 1024;
+constexpr size_t maxTestedBitsSize = 512;
 
 TEST(BigIntFunct, SimpleStrings)
 {
@@ -348,6 +348,28 @@ TEST(BigIntFunct, binaryRLExp)
 
         BigInt myBase(base.get_str(16));
         BigInt myModulo(modulo.get_str(16));
+        BigInt myResult = myBase.binaryRLExp(BigInt(exponent));
+
+        ASSERT_TRUE(std::string(result.get_str(16)) == myResult.getStr(BigInt::Hex));
+    }
+}
+
+TEST(BigIntFunct, slidingWindowExp)
+{
+    gmp_randclass randomMachine(gmp_randinit_default);
+    std::default_random_engine gen;
+    constexpr word maxTestExponent = 500;
+    constexpr size_t iterations = 5;
+    std::uniform_int_distribution<size_t> bitsDistr(1, maxTestedBitsSize);
+    mpz_class base = randomMachine.get_z_bits(bitsDistr(gen));
+    for (size_t i = 1; i < iterations; ++i) {
+        mpz_class result;
+        std::uniform_int_distribution<size_t> expDistr(1, maxTestExponent);
+        word exponent = expDistr(gen);
+
+        mpz_pow_ui(result.get_mpz_t(), base.get_mpz_t(), exponent);
+
+        BigInt myBase(base.get_str(16));
         BigInt myResult = myBase.binaryRLExp(BigInt(exponent));
 
         ASSERT_TRUE(std::string(result.get_str(16)) == myResult.getStr(BigInt::Hex));

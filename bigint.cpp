@@ -27,6 +27,7 @@ BigInt::BigInt(const std::string &asStr)
 BigInt::BigInt(std::vector<word>&& heap)
 {
     _heap.insert(_heap.begin(), std::make_move_iterator(heap.begin()), std::make_move_iterator(heap.end()));
+    _table.clear();
     removeLeadingZeros();
 }
 
@@ -412,6 +413,49 @@ BigInt BigInt::binaryRLExp(const BigInt &exponent)
     return a;
 }
 
+BigInt BigInt::binarySWExp(const BigInt &exponent)
+{
+    constexpr int32_t defaultKValue = 3;
+    if (_table.empty())
+        generateExpTable();
+
+    BigInt result = 1;
+    for (int32_t i = exponent.bitsLen() - 1; i > 0;) {
+        if (exponent.getBitAt(i) == false) {
+           result = result * result;
+           --i;
+        } else {
+            word s = std::max(static_cast<int32_t>(i - defaultKValue + 1), 0);
+            while (exponent.getBitAt(s) == false)
+                ++s;
+
+            for (word h = 0; h < i - s + 1; ++h)
+                result = result * result;
+
+            word u = ((exponent >> s) & (~((~word(0)) << (i - s + 1)))).getHeap().front();
+            result = result * _table.at(u);
+            i = s - 1;
+        }
+    }
+    return result;
+}
+
+void BigInt::generateExpTable()
+{
+    _table.clear();
+    _table.reserve((1 << _expConstantK) + 1);
+    _table.push_back(0);
+    _table.push_back(*this);
+    _table.push_back(_table[1] * _table[1]);
+    _table.push_back(_table[1] * _table.back());
+    for (size_t i = 4; i < (1 << _expConstantK) - 1; i += 2) {
+        // Only for index offset reasons we adding zeros at even indicies.
+        // In case we would not store zeros we would need to transalte & recompute indicies
+        _table.push_back(0);
+        _table.push_back(_table[i - 1] * _table[2]);
+    }
+}
+
 size_t BigInt::bitsLen() const
 {
     if (_heap.empty())
@@ -462,7 +506,8 @@ void BigInt::setBitAt(size_t index, bool value)
 std::string BigInt::getDecStr() const
 {
     std::string result;
-    BigInt base(1, 1000000000);
+    constexpr word maxDecDivisibleWord = 1000000000;
+    BigInt base(1, maxDecDivisibleWord);
     BigInt numerator = *this;
     std::vector<std::string> parts;
     parts.reserve(_heap.size());
@@ -498,4 +543,14 @@ std::string BigInt::getBinStr() const
     for (auto it = _heap.rbegin() + 1; it != _heap.rend(); ++it)
         result += fmt::format("{:0>32b}", *it);
     return result;
+}
+
+word BigInt::getExpConstantK() const
+{
+    return _expConstantK;
+}
+
+void BigInt::setExpConstantK(const word& expConstantK)
+{
+    _expConstantK = expConstantK;
 }

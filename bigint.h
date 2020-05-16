@@ -5,6 +5,8 @@
 #include <string>
 #include <cstdint>
 
+#include <iostream>
+
 using word = uint32_t;
 constexpr size_t bitsInWord = 32;
 constexpr word maxWord = ~word(0);
@@ -48,6 +50,8 @@ public:
     BigInt modExpLrKary(word exponenent, const BigInt &modulo, word k = 5);
     BigInt binaryLRExp(const BigInt& exponent);
     BigInt binaryRLExp(const BigInt& exponent);
+    BigInt binarySWExp(const BigInt& exponent);
+    void generateExpTable();
 
     bool operator==(const BigInt &right) const;
     bool operator<(const BigInt &right) const;
@@ -80,6 +84,9 @@ public:
         _heap.resize(newSize, 0);
     }
 
+    word getExpConstantK() const;
+    void setExpConstantK(const word& expConstantK);
+
 private:
     inline void removeLeadingZeros()
     {
@@ -97,6 +104,9 @@ private:
     std::string getDecStr() const;
     std::string getHexcStr() const;
     std::string getBinStr() const;
+
+    std::vector<BigInt> _table;
+    word _expConstantK = 3;
     std::vector<word> _heap;
 };
 
