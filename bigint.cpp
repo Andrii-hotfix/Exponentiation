@@ -364,6 +364,9 @@ BigInt BigInt::kAryLRExp(const BigInt &exponent)
     if (_table.empty())
         generateExpTable();
 
+    if (*this < 2)
+        return *this;
+
     std::vector<word> kAryWindows;
     kAryWindows.reserve(std::ceil(exponent.bitsLen() / _expConstantK));
     for (size_t i = 0; i < exponent.bitsLen(); i += _expConstantK)
@@ -409,24 +412,24 @@ BigInt BigInt::binaryRLExp(const BigInt &exponent)
 
 BigInt BigInt::binarySWExp(const BigInt &exponent)
 {
-    constexpr int32_t defaultKValue = 3;
     if (_table.empty())
         generateExpTable();
 
     BigInt result = 1;
-    for (int32_t i = exponent.bitsLen() - 1; i > 0;) {
+    for (int32_t i = exponent.bitsLen() - 1; i >= 0;) {
         if (exponent.getBitAt(i) == false) {
            result = result * result;
            --i;
         } else {
-            word s = std::max(static_cast<int32_t>(i - defaultKValue + 1), 0);
+            word s = std::max(static_cast<int32_t>(i - _expConstantK + 1), 0);
             while (exponent.getBitAt(s) == false)
                 ++s;
 
             for (word h = 0; h < i - s + 1; ++h)
                 result = result * result;
 
-            word u = ((exponent >> s) & (~((~word(0)) << (i - s + 1)))).getHeap().front();
+            BigInt tmp = (exponent >> s) & (~((~word(0)) << (i - s + 1)));
+            word u = tmp.getHeap().front();
             result = result * _table.at(u);
             i = s - 1;
         }
@@ -540,4 +543,9 @@ word BigInt::getExpConstantK() const
 void BigInt::setExpConstantK(const word& expConstantK)
 {
     _expConstantK = expConstantK;
+}
+
+BigInt bigMax(const BigInt &left, const BigInt &right)
+{
+    return left >= right ? left : right;
 }

@@ -110,4 +110,6 @@ private:
     std::vector<word> _heap;
 };
 
+BigInt bigMax(const BigInt &left, const BigInt& right);
+
 #endif // BIGINT_H
