@@ -1,4 +1,4 @@
-#include "../bigint.h"
+#include "bigintfunct.h"
 
 #include <gtest/gtest.h>
 #include <gmpxx.h>
@@ -226,7 +226,7 @@ TEST(BigIntFunct, DivisionRemainder)
         BigInt myRight(right.get_str(16));
 
         mpz_fdiv_qr(quotient.get_mpz_t(), remainder.get_mpz_t(), left.get_mpz_t(), right.get_mpz_t());
-        auto[myQuotient, myRemainder] = myLeft.divisionRemainder(myRight);
+        auto[myQuotient, myRemainder] = divisionRemainder(myLeft, myRight);
 
         ASSERT_TRUE(std::string(quotient.get_str(16)) == myQuotient.getStr(BigInt::Hex));
         ASSERT_TRUE(std::string(remainder.get_str(16)) == myRemainder.getStr(BigInt::Hex));
@@ -268,7 +268,7 @@ TEST(BigIntFunct, GCD)
 
         BigInt myLeft(left.get_str(16));
         BigInt myRight(right.get_str(16));
-        BigInt myG = myLeft.gcd(myRight);
+        BigInt myG = gcd(myLeft, myRight);
 
         ASSERT_TRUE(std::string(g.get_str(16)) == myG.getStr(BigInt::Hex));
     }

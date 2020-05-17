@@ -33,37 +33,20 @@ public:
     std::string getStr(NumberBase repr = NumberBase::Dec) const;
     const std::vector<word>& readHeap() const;
 
-    BigInt operator*(const BigInt &right) const;
-    BigInt operator%(const BigInt &modulo) const;
-    BigInt operator&(const BigInt &right) const;
-    BigInt operator|(const BigInt &right) const;
-    BigInt operator^(const BigInt &right) const;
-    BigInt operator~() const;
-    BigInt operator>>(const size_t numOfShifts) const;
     BigInt operator>>=(const size_t mumOfShifts) const;
-    BigInt operator<<(const size_t numOfShifts) const;
     void operator<<=(const size_t numOfShifts);
 
-    BigInt operator+(const BigInt &right) const;
-    BigInt operator-(const BigInt &right) const;
-    std::pair<BigInt, BigInt> divisionRemainder(const BigInt &denominator) const;
     BigInt kAryLRExp(const BigInt &exponent);
     BigInt binaryLRExp(const BigInt& exponent);
     BigInt binaryRLExp(const BigInt& exponent);
     BigInt binarySWExp(const BigInt& exponent);
     void generateExpTable();
 
-    bool operator==(const BigInt &right) const;
-    bool operator<(const BigInt &right) const;
-    bool operator<=(const BigInt &right) const;
-    bool operator>(const BigInt &right) const;
-    bool operator>=(const BigInt &right) const;
 
     void operator*=(const BigInt &right);
     void operator%=(const BigInt &right);
     void operator|=(const BigInt &right);
 
-    BigInt gcd(const BigInt &right);
 
     size_t bitsLen() const;
     bool getBitAt(size_t index) const;
@@ -84,10 +67,11 @@ public:
         _heap.resize(newSize, 0);
     }
 
-    word getExpConstantK() const;
-    void setExpConstantK(const word& expConstantK);
+    inline const std::vector<word> &getHeap() const
+    {
+        return _heap;
+    }
 
-private:
     inline void removeLeadingZeros()
     {
         size_t newSize = _heap.size();
@@ -96,11 +80,10 @@ private:
         _heap.resize(newSize);
     }
 
-    inline const std::vector<word> &getHeap() const
-    {
-        return _heap;
-    }
+    word getExpConstantK() const;
+    void setExpConstantK(const word& expConstantK);
 
+private:
     std::string getDecStr() const;
     std::string getHexcStr() const;
     std::string getBinStr() const;
@@ -109,7 +92,5 @@ private:
     word _expConstantK = 3;
     std::vector<word> _heap;
 };
-
-BigInt bigMax(const BigInt &left, const BigInt& right);
 
 #endif // BIGINT_H

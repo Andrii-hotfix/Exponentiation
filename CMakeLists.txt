@@ -11,7 +11,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake) # Include custom modules
 
 add_library(Exponentiation
-            bigint.cpp)
+            bigint.cpp
+            bigintfunct.cpp
+            )
+
+target_include_directories(${PROJECT_NAME} INTERFACE
+                           ${CMAKE_CURRENT_SOURCE_DIR}
+                           )
+
 target_link_libraries(${PROJECT_NAME} fmt::fmt)
 
 project(exponentiation-main)
