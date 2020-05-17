@@ -15,7 +15,7 @@ TEST(BigIntFunct, SimpleStrings)
 
     for (size_t i = 124; i < maxTestedBitsSize; ++i) {
         mpz_class gmpBigNum = randomMachine.get_z_bits(i);
-        BigInt myBigNum(gmpBigNum.get_str(16));
+        BigInt myBigNum(gmpBigNum.get_str(10), BigInt::Dec);
 
         ASSERT_EQ(gmpBigNum.get_str(2).size(), myBigNum.bitsLen());
         ASSERT_TRUE(std::string(gmpBigNum.get_str(2)) == myBigNum.getStr(BigInt::Bin));

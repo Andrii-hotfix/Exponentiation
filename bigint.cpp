@@ -21,9 +21,12 @@ BigInt::BigInt(size_t size, uint32_t value)
     _heap.resize(size, value);
 }
 
-BigInt::BigInt(const std::string &asStr)
+BigInt::BigInt(const std::string &asStr, NumberBase base)
 {
-    setHexStr(asStr);
+    if (base == BigInt::Hex)
+        setHexStr(asStr);
+    else if (base == BigInt::Dec)
+        setDecStr(asStr);
 }
 
 BigInt::BigInt(std::vector<word>&& heap)
@@ -38,15 +41,34 @@ void BigInt::setHexStr(const std::string &asStr)
     _heap.clear();
     // Add leading 0 digits if any needed
     std::string trailingNulls;
-    for (size_t i = 0; i < (8 - asStr.size() % 8) % 8; ++i)
+    constexpr size_t digitsBase = 8;
+    for (size_t i = 0; i < (digitsBase - asStr.size() % digitsBase) % digitsBase; ++i)
         trailingNulls += '0';
 
     std::string formattedStr = trailingNulls + asStr;
-    size_t heapSize = static_cast<size_t>(formattedStr.size() / 8);
+    size_t heapSize = static_cast<size_t>(formattedStr.size() / digitsBase);
     _heap.resize(heapSize);
-    for (size_t i = 0, j = heapSize - 1; i < formattedStr.size(); i += 8, --j)
-        _heap[j] = static_cast<word>(stoul(formattedStr.substr(i, 8), nullptr, 16));
+    for (size_t i = 0, j = heapSize - 1; i < formattedStr.size(); i += digitsBase, --j)
+        _heap[j] = static_cast<word>(stoul(formattedStr.substr(i, digitsBase), nullptr, 16));
+
     removeLeadingZeros();
+}
+
+void BigInt::setDecStr(const std::string &asStr)
+{
+    _heap.clear();
+    std::string trailingNulls;
+    constexpr int32_t digitsBase = 8;
+    for (size_t i = 0; i < (digitsBase - asStr.size() % digitsBase) % digitsBase; ++i)
+        trailingNulls += '0';
+
+    std::string formattedStr = trailingNulls + asStr;
+    for (int32_t i = formattedStr.size() - 1, j = 0; i - digitsBase + 1 >= 0; i -= digitsBase, j += digitsBase) {
+        BigInt multiplier = BigInt(10).binarySWExp(j);
+        std::string subs = formattedStr.substr(i - digitsBase + 1, digitsBase);
+        auto foo = static_cast<word>(stoul(subs, nullptr, 10));
+        *this = *this + (foo * multiplier);
+    }
 }
 
 std::string BigInt::getStr(BigInt::NumberBase repr) const

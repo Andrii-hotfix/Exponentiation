@@ -24,11 +24,13 @@ public:
     BigInt() = default;
     BigInt(word value);
     BigInt(size_t size, word value);
-    BigInt(const std::string &asStr);
+    BigInt(const std::string &asStr, NumberBase base = Hex);
     BigInt(std::vector<word>&& heap);
     BigInt(const BigInt& left) = default;
 
     void setHexStr(const std::string &asStr);
+    void setDecStr(const std::string &asStr);
+    void setBinStr(const std::string &asStr);
 
     std::string getStr(NumberBase repr = NumberBase::Dec) const;
     const std::vector<word>& readHeap() const;
@@ -41,12 +43,6 @@ public:
     BigInt binaryRLExp(const BigInt& exponent);
     BigInt binarySWExp(const BigInt& exponent);
     void generateExpTable();
-
-
-    void operator*=(const BigInt &right);
-    void operator%=(const BigInt &right);
-    void operator|=(const BigInt &right);
-
 
     size_t bitsLen() const;
     bool getBitAt(size_t index) const;

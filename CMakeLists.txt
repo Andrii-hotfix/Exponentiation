@@ -4,6 +4,7 @@ project(Exponentiation LANGUAGES CXX)
 
 find_package(GTest REQUIRED)
 find_package(fmt REQUIRED)
+find_package(Boost COMPONENTS program_options)
 
 enable_testing()
 set(CMAKE_CXX_STANDARD 17)
@@ -19,7 +20,10 @@ target_include_directories(${PROJECT_NAME} INTERFACE
                            ${CMAKE_CURRENT_SOURCE_DIR}
                            )
 
-target_link_libraries(${PROJECT_NAME} fmt::fmt)
+target_link_libraries(${PROJECT_NAME}
+                      Boost::program_options
+                      fmt::fmt
+                      )
 
 project(exponentiation-main)
 
