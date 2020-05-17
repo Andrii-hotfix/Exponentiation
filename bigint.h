@@ -47,7 +47,7 @@ public:
     BigInt operator+(const BigInt &right) const;
     BigInt operator-(const BigInt &right) const;
     std::pair<BigInt, BigInt> divisionRemainder(const BigInt &denominator) const;
-    BigInt modExpLrKary(word exponenent, const BigInt &modulo, word k = 5);
+    BigInt kAryLRExp(const BigInt &exponent);
     BigInt binaryLRExp(const BigInt& exponent);
     BigInt binaryRLExp(const BigInt& exponent);
     BigInt binarySWExp(const BigInt& exponent);

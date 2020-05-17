@@ -344,8 +344,8 @@ std::pair<BigInt, BigInt> BigInt::divisionRemainder(const BigInt &denominator) c
     if ((*this <= BigInt(1, maxWord)) and (denominator <= BigInt(1, maxWord)))
         return {BigInt(1, static_cast<word>(_heap[0] / denominator.getHeap()[0])), BigInt(1, _heap[0] % denominator.getHeap()[0])};
 
-    BigInt quotient(1, 0);
-    BigInt remainder(1, 0);
+    BigInt quotient = 0;
+    BigInt remainder = 0;
     for (long i = bitsLen() - 1; i >= 0; --i) {
         remainder = remainder << 1;
         remainder.setBitAt(0, getBitAt(i));
@@ -359,32 +359,26 @@ std::pair<BigInt, BigInt> BigInt::divisionRemainder(const BigInt &denominator) c
     return {quotient, remainder};
 }
 
-BigInt BigInt::modExpLrKary(word exponent, const BigInt &modulo, word k)
+BigInt BigInt::kAryLRExp(const BigInt &exponent)
 {
-    word b = 2 << (k - 1);
+    if (_table.empty())
+        generateExpTable();
 
-    // Compute the table of exponents first
-    std::vector<BigInt> table(b, 1);
-    for (size_t i = 1; i < b; ++i)
-        table[i] = (table[i - 1] * (*this)) % modulo;
+    std::vector<word> kAryWindows;
+    kAryWindows.reserve(std::ceil(exponent.bitsLen() / _expConstantK));
+    for (size_t i = 0; i < exponent.bitsLen(); i += _expConstantK)
+        kAryWindows.push_back(((exponent >> i) & (~(~word(0) << _expConstantK))).getHeap().front());
+    std::reverse(kAryWindows.begin(), kAryWindows.end());
 
-    std::vector<BigInt> digitsOfModulo;
-    BigInt n = exponent;
-    while (not n.isZero()) {
-        auto[quotient, remainder] = n.divisionRemainder(b);
-        digitsOfModulo.emplace_back(std::move(remainder));
-        n = std::move(quotient);
+    BigInt result = _table.at(kAryWindows.front());
+
+    for (size_t i = 1; i < kAryWindows.size(); ++i) {
+        for (size_t j = 0; j < _expConstantK; ++j)
+            result = result * result;
+
+        result = result * _table[kAryWindows[i]];
     }
-    std::reverse(digitsOfModulo.begin(), digitsOfModulo.end());
-    BigInt r = 1;
-    for (const BigInt& digit : digitsOfModulo) {
-        for (size_t i = 0; i < k; ++i)
-            r = (r * r) % n;
-
-        if (not digit.isZero())
-            r = r * table.at(digit.getHeap().front()) % n;
-    }
-        return r;
+    return result;
 }
 
 BigInt BigInt::binaryLRExp(const BigInt &exponent)
@@ -443,17 +437,10 @@ BigInt BigInt::binarySWExp(const BigInt &exponent)
 void BigInt::generateExpTable()
 {
     _table.clear();
-    _table.reserve((1 << _expConstantK) + 1);
-    _table.push_back(0);
-    _table.push_back(*this);
-    _table.push_back(_table[1] * _table[1]);
-    _table.push_back(_table[1] * _table.back());
-    for (size_t i = 4; i < (1 << _expConstantK) - 1; i += 2) {
-        // Only for index offset reasons we adding zeros at even indicies.
-        // In case we would not store zeros we would need to transalte & recompute indicies
-        _table.push_back(0);
-        _table.push_back(_table[i - 1] * _table[2]);
-    }
+    _table.resize((1 << _expConstantK));
+    _table[0] = 1;
+    for (size_t i = 1; i < (1 << _expConstantK); ++i)
+        _table[i] = (*this) * _table[i - 1];
 }
 
 size_t BigInt::bitsLen() const
