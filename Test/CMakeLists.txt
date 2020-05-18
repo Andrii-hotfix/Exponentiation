@@ -6,8 +6,10 @@ add_executable(test-exponentiation
             main.cpp
             )
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -lgmp -lgmpxx")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lgmp -lgmpxx")
 
 target_link_libraries(test-exponentiation
                       Exponentiation
-                      GTest::GTest GTest::Main)
+                      GTest::GTest
+                      GTest::Main
+                      OpenSSL::Crypto)

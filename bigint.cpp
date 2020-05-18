@@ -21,12 +21,9 @@ BigInt::BigInt(size_t size, uint32_t value)
     _heap.resize(size, value);
 }
 
-BigInt::BigInt(const std::string &asStr, NumberBase base)
+BigInt::BigInt(const std::string& asStr, NumberBase base)
 {
-    if (base == BigInt::Hex)
-        setHexStr(asStr);
-    else if (base == BigInt::Dec)
-        setDecStr(asStr);
+    setStr(asStr, base);
 }
 
 BigInt::BigInt(std::vector<word>&& heap)
@@ -36,39 +33,14 @@ BigInt::BigInt(std::vector<word>&& heap)
     removeLeadingZeros();
 }
 
-void BigInt::setHexStr(const std::string &asStr)
+void BigInt::setStr(const std::string &asStr, BigInt::NumberBase base)
 {
-    _heap.clear();
-    // Add leading 0 digits if any needed
-    std::string trailingNulls;
-    constexpr size_t digitsBase = 8;
-    for (size_t i = 0; i < (digitsBase - asStr.size() % digitsBase) % digitsBase; ++i)
-        trailingNulls += '0';
-
-    std::string formattedStr = trailingNulls + asStr;
-    size_t heapSize = static_cast<size_t>(formattedStr.size() / digitsBase);
-    _heap.resize(heapSize);
-    for (size_t i = 0, j = heapSize - 1; i < formattedStr.size(); i += digitsBase, --j)
-        _heap[j] = static_cast<word>(stoul(formattedStr.substr(i, digitsBase), nullptr, 16));
-
-    removeLeadingZeros();
-}
-
-void BigInt::setDecStr(const std::string &asStr)
-{
-    _heap.clear();
-    std::string trailingNulls;
-    constexpr int32_t digitsBase = 8;
-    for (size_t i = 0; i < (digitsBase - asStr.size() % digitsBase) % digitsBase; ++i)
-        trailingNulls += '0';
-
-    std::string formattedStr = trailingNulls + asStr;
-    for (int32_t i = formattedStr.size() - 1, j = 0; i - digitsBase + 1 >= 0; i -= digitsBase, j += digitsBase) {
-        BigInt multiplier = BigInt(10).binarySWExp(j);
-        std::string subs = formattedStr.substr(i - digitsBase + 1, digitsBase);
-        auto foo = static_cast<word>(stoul(subs, nullptr, 10));
-        *this = *this + (foo * multiplier);
-    }
+    if (base == BigInt::Hex)
+        setHexStr(asStr);
+    else if (base == BigInt::Dec)
+        setDecStr(asStr);
+    else if (base == BigInt::Bin)
+        setBinStr(asStr);
 }
 
 std::string BigInt::getStr(BigInt::NumberBase repr) const
@@ -77,10 +49,11 @@ std::string BigInt::getStr(BigInt::NumberBase repr) const
     case NumberBase::Bin:
         return getBinStr();
     case NumberBase::Hex:
-        return getHexcStr();
+        return getHexStr();
     case NumberBase::Dec:
         return getDecStr();
     }
+    return getHexStr();
 }
 
 const std::vector<word>& BigInt::readHeap() const
@@ -103,7 +76,7 @@ void BigInt::operator<<=(const size_t numOfShifts)
     }
 }
 
-BigInt BigInt::kAryLRExp(const BigInt &exponent)
+BigInt BigInt::kAryLRExp(const BigInt& exponent)
 {
     if (_table.empty())
         generateExpTable();
@@ -128,7 +101,7 @@ BigInt BigInt::kAryLRExp(const BigInt &exponent)
     return result;
 }
 
-BigInt BigInt::binaryLRExp(const BigInt &exponent)
+BigInt BigInt::binaryLRExp(const BigInt& exponent)
 {
     BigInt result = 1;
     for (size_t i = exponent.bitsLen(); i > 0; --i) {
@@ -139,7 +112,7 @@ BigInt BigInt::binaryLRExp(const BigInt &exponent)
     return result;
 }
 
-BigInt BigInt::binaryRLExp(const BigInt &exponent)
+BigInt BigInt::binaryRLExp(const BigInt& exponent)
 {
     BigInt a = 1;
     BigInt s = *this;
@@ -154,7 +127,7 @@ BigInt BigInt::binaryRLExp(const BigInt &exponent)
     return a;
 }
 
-BigInt BigInt::binarySWExp(const BigInt &exponent)
+BigInt BigInt::binarySWExp(const BigInt& exponent)
 {
     if (_table.empty())
         generateExpTable();
@@ -237,6 +210,16 @@ void BigInt::setBitAt(size_t index, bool value)
     }
 }
 
+word BigInt::getExpConstantK() const
+{
+    return _expConstantK;
+}
+
+void BigInt::setExpConstantK(const word& expConstantK)
+{
+    _expConstantK = expConstantK;
+}
+
 std::string BigInt::getDecStr() const
 {
     std::string result;
@@ -261,7 +244,7 @@ std::string BigInt::getDecStr() const
     return result;
 }
 
-std::string BigInt::getHexcStr() const
+std::string BigInt::getHexStr() const
 {
     std::string result;
     result += fmt::format("{0:x}", _heap.back());
@@ -279,17 +262,60 @@ std::string BigInt::getBinStr() const
     return result;
 }
 
-word BigInt::getExpConstantK() const
+void BigInt::setHexStr(const std::string& asStr)
 {
-    return _expConstantK;
+    _heap.clear();
+    // Add leading 0 digits if any needed
+    std::string trailingNulls;
+    constexpr size_t digitsBase = 8;
+    for (size_t i = 0; i < (digitsBase - asStr.size() % digitsBase) % digitsBase; ++i)
+        trailingNulls += '0';
+
+    std::string formattedStr = trailingNulls + asStr;
+    size_t heapSize = static_cast<size_t>(formattedStr.size() / digitsBase);
+    _heap.resize(heapSize);
+    for (size_t i = 0, j = heapSize - 1; i < formattedStr.size(); i += digitsBase, --j)
+        _heap[j] = static_cast<word>(stoul(formattedStr.substr(i, digitsBase), nullptr, 16));
+
+    removeLeadingZeros();
 }
 
-void BigInt::setExpConstantK(const word& expConstantK)
+void BigInt::setDecStr(const std::string& asStr)
 {
-    _expConstantK = expConstantK;
+    _heap.clear();
+    std::string trailingNulls;
+    constexpr int32_t digitsBase = 8;
+    for (size_t i = 0; i < (digitsBase - asStr.size() % digitsBase) % digitsBase; ++i)
+        trailingNulls += '0';
+
+    std::string formattedStr = trailingNulls + asStr;
+    for (int32_t i = formattedStr.size() - 1, j = 0; i - digitsBase + 1 >= 0; i -= digitsBase, j += digitsBase) {
+        BigInt multiplier = BigInt(10).binarySWExp(j);
+        std::string subs = formattedStr.substr(i - digitsBase + 1, digitsBase);
+        auto foo = static_cast<word>(stoul(subs, nullptr, 10));
+        *this = *this + (foo * multiplier);
+    }
 }
 
-BigInt bigMax(const BigInt &left, const BigInt &right)
+void BigInt::setBinStr(const std::string& asStr)
 {
-    return left >= right ? left : right;
+    _heap.clear();
+    // Add leading 0 digits if any needed
+    std::string trailingNulls;
+    constexpr size_t digitsBase = 32;
+    for (size_t i = 0; i < (digitsBase - asStr.size() % digitsBase) % digitsBase; ++i)
+        trailingNulls += '0';
+
+    std::string formattedStr = trailingNulls + asStr;
+    size_t heapSize = static_cast<size_t>(formattedStr.size() / digitsBase);
+    _heap.resize(heapSize);
+    for (size_t i = 0, j = heapSize - 1; i < formattedStr.size(); i += digitsBase, --j) {
+        try {
+            _heap[j] = static_cast<word>(stoul(formattedStr.substr(i, digitsBase), nullptr, 2));
+        } catch (std::exception &err) {
+            std::cerr << err.what() << std::endl;
+        }
+    }
+
+    removeLeadingZeros();
 }

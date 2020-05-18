@@ -24,21 +24,20 @@ public:
     BigInt() = default;
     BigInt(word value);
     BigInt(size_t size, word value);
-    BigInt(const std::string &asStr, NumberBase base = Hex);
+    BigInt(const std::string& asStr, NumberBase base = Hex);
     BigInt(std::vector<word>&& heap);
     BigInt(const BigInt& left) = default;
 
-    void setHexStr(const std::string &asStr);
-    void setDecStr(const std::string &asStr);
-    void setBinStr(const std::string &asStr);
-
-    std::string getStr(NumberBase repr = NumberBase::Dec) const;
+    void setStr(const std::string& asStr, NumberBase base = NumberBase::Hex);
+    std::string getStr(NumberBase repr = NumberBase::Hex) const;
     const std::vector<word>& readHeap() const;
 
-    BigInt operator>>=(const size_t mumOfShifts) const;
+    // As this operator can make heap bigger, reallocation costs may become significant.
+    // So by introducing this in-place operation we ommit reallocations where it is possible.
+    // TODO: intoduce more binary in-place operators like this.
     void operator<<=(const size_t numOfShifts);
 
-    BigInt kAryLRExp(const BigInt &exponent);
+    BigInt kAryLRExp(const BigInt& exponent);
     BigInt binaryLRExp(const BigInt& exponent);
     BigInt binaryRLExp(const BigInt& exponent);
     BigInt binarySWExp(const BigInt& exponent);
@@ -81,8 +80,12 @@ public:
 
 private:
     std::string getDecStr() const;
-    std::string getHexcStr() const;
+    std::string getHexStr() const;
     std::string getBinStr() const;
+    void setHexStr(const std::string& asStr);
+    void setDecStr(const std::string& asStr);
+    void setBinStr(const std::string& asStr);
+
 
     std::vector<BigInt> _table;
     word _expConstantK = 3;
