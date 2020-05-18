@@ -3,9 +3,9 @@
 
 This repository contains BigInteger library which can perform logic and arithmetic operations operating with arbitrary sized integers. The size of the integers limits only by your memory. This library is designed especially to perform exponentiation on 32-bit arc processors. 
 
-1. [How to use](#Usage)
-2. [How to build](#Build)
-3. [Testing](##Testing)
+1. [Usage](#Usage)
+2. [Build](#Build)
+3. [Testing](#Testing)
 4. [Extra](#Extra)
 
 ## Build 
