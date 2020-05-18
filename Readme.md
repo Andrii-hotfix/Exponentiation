@@ -8,7 +8,7 @@ This repository contains BigInteger library which can perform logic and arithmet
 3. [Testing](#Testing)
 4. [Extra](#Extra)
 
-## Build 
+## Usage
 
 Usage:
 `./exponentiation-main -input a ^ b [-radix 2/10/16]`
@@ -18,10 +18,13 @@ argument -r. The default radix is 10.
 
 Folder Test contains tests of the library. 
 
-## Usage
+## Build
 
 The core library does not have any dependencies. But command line interface requires 
-boost C++ library. Tests require GNU MP library and OpenSSL library. So to build tests and CLI you need to install in your system theese dependencied. Please contact me in case you have any issues with the deps.
+[Boost](https://www.boost.org) C++ library. Tests require [GNU MP](https://gmplib.org) library and [OpenSSL library](https://www.openssl.org). So to build tests and CLI you need to install in your system theese dependencied. Please contact me in case you have any issues with the deps.
+
+**This library uses C++17**  
+So you may need to find the compiler which supports C++17 std. Please refer [this table](https://en.cppreference.com/w/cpp/compiler_support) to find suitable compiler
 
 The build process is pretty simple:
 
