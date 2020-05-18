@@ -34,10 +34,6 @@ int main(int argc, const char* argv[])
             return 1;
         }
         std::vector<std::string> tokens = variables["input"].as<std::vector<std::string>>();
-//        boost::tokenizer<boost::char_separator<char>> tokenizer(std::string(variables["input"].as<std::vector<std::string>>().front()), boost::char_separator<char>(" "));
-//        for (auto it = tokenizer.begin(); it != tokenizer.end(); ++it)
-//            tokens.emplace_back(it.current_token());
-        // Do a little parsin'
         if (tokens.size() != 3)
             throw std::logic_error("Malformed input expression");
 
