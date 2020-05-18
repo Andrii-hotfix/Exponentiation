@@ -49,13 +49,13 @@ int main(int argc, const char* argv[])
         word exp = std::stoul(tokens.front(), nullptr, 10);
 
         if (mode == "sw")
-            std::cout << base.binarySWExp(exp).getStr(BigInt::Dec);
+            std::cout << base.binarySWExp(exp).getStr(BigInt::Dec) << std::endl;
         else if (mode == "ma")
-            std::cout << base.kAryLRExp(exp).getStr(BigInt::Dec);
+            std::cout << base.kAryLRExp(exp).getStr(BigInt::Dec) << std::endl;
         else if (mode == "lr")
-            std::cout << base.binaryLRExp(exp).getStr(BigInt::Dec);
+            std::cout << base.binaryLRExp(exp).getStr(BigInt::Dec) << std::endl;
         else if (mode == "rl")
-            std::cout << base.binaryRLExp(exp).getStr(BigInt::Dec);
+            std::cout << base.binaryRLExp(exp).getStr(BigInt::Dec) << std::endl;
         else
             throw std::logic_error("Unknown exponentiation mode");
 
