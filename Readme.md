@@ -14,7 +14,11 @@ Usage:
 `./exponentiation-main -input a ^ b [-radix 2/10/16]`
 
 This command outputs result of exponentiation a to power b in the radix given in 
-argument -r. The default radix is 10.
+argument -r. The default radix is 10.  
+
+### Constaints
+
+While base value can be any lenght possible, **only 32-bit values are permitted as exponent**. Also this library can only hold **non-negative** values (both exponent and base must be positive or 0)
 
 Folder Test contains tests of the library. 
 
