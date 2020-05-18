@@ -21,7 +21,7 @@ BigInt::BigInt(size_t size, uint32_t value)
     _heap.resize(size, value);
 }
 
-BigInt::BigInt(const std::string& asStr, NumberBase base)
+BigInt::BigInt(const std::string& asStr, Radix base)
 {
     setStr(asStr, base);
 }
@@ -33,7 +33,7 @@ BigInt::BigInt(std::vector<word>&& heap)
     removeLeadingZeros();
 }
 
-void BigInt::setStr(const std::string &asStr, BigInt::NumberBase base)
+void BigInt::setStr(const std::string &asStr, BigInt::Radix base)
 {
     if (base == BigInt::Hex)
         setHexStr(asStr);
@@ -43,14 +43,14 @@ void BigInt::setStr(const std::string &asStr, BigInt::NumberBase base)
         setBinStr(asStr);
 }
 
-std::string BigInt::getStr(BigInt::NumberBase repr) const
+std::string BigInt::getStr(BigInt::Radix repr) const
 {
     switch (repr) {
-    case NumberBase::Bin:
+    case Radix::Bin:
         return getBinStr();
-    case NumberBase::Hex:
+    case Radix::Hex:
         return getHexStr();
-    case NumberBase::Dec:
+    case Radix::Dec:
         return getDecStr();
     }
     return getHexStr();
@@ -76,10 +76,13 @@ void BigInt::operator<<=(const size_t numOfShifts)
     }
 }
 
-BigInt BigInt::kAryLRExp(const BigInt& exponent)
+BigInt BigInt::mAryLRExp(const BigInt& exponent)
 {
     if (_table.empty())
         generateExpTable();
+
+    if (*this == 0 and exponent == 0)
+        return 1;
 
     if (*this < BigInt(2))
         return *this;

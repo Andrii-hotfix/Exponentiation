@@ -14,7 +14,7 @@ constexpr word maxWord = ~word(0);
 class BigInt
 {
 public:
-    enum NumberBase
+    enum Radix
     {
         Hex = 16,
         Dec = 10,
@@ -24,12 +24,12 @@ public:
     BigInt() = default;
     BigInt(word value);
     BigInt(size_t size, word value);
-    BigInt(const std::string& asStr, NumberBase base = Hex);
+    BigInt(const std::string& asStr, Radix base = Hex);
     BigInt(std::vector<word>&& heap);
     BigInt(const BigInt& left) = default;
 
-    void setStr(const std::string& asStr, NumberBase base = NumberBase::Hex);
-    std::string getStr(NumberBase repr = NumberBase::Hex) const;
+    void setStr(const std::string& asStr, Radix base = Radix::Hex);
+    std::string getStr(Radix repr = Radix::Hex) const;
     const std::vector<word>& readHeap() const;
 
     // As this operator can make heap bigger, reallocation costs may become significant.
@@ -37,7 +37,7 @@ public:
     // TODO: intoduce more binary in-place operators like this.
     void operator<<=(const size_t numOfShifts);
 
-    BigInt kAryLRExp(const BigInt& exponent);
+    BigInt mAryLRExp(const BigInt& exponent);
     BigInt binaryLRExp(const BigInt& exponent);
     BigInt binaryRLExp(const BigInt& exponent);
     BigInt binarySWExp(const BigInt& exponent);
