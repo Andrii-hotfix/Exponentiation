@@ -1,0 +1,53 @@
+%\usepackage{simplemargins}
+%\usepackage[square]{natbib}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{authblk}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[ukrainian]{babel}
+\usepackage[backend=biber]{biblatex}
+\addbibresource{article.bib}
+\author{Дегтярьов Андрій, ФБ-91мп}
+\begin{document}
+\pagenumbering{gobble} %roman, arabic
+
+\title{\textbf{МРМКЗІ: Лабораторна робота №1. Бібліотека багатослівної арифметики та алгоритми
+швидкого піднесення в степінь }}
+
+\date{15.05.2020}
+\maketitle
+\hspace{10pt}
+
+\normalsize
+\textbf{Вступ}  
+У данній роботі було досліджено алгоритми піднесення в степінь чисел, які мають довільний розмір в бітах. 
+Було імплементовано наступні алгоритми піднесення в степінь: 
+\begin{list}
+\item "SLiding Window "
+\item "M-арний алгоритм"
+\item "LR - бінарний алгоритм "
+\item "RL - бінарний алгоритм "
+\end{list}
+
+Задля реалізації вище згаданих алгоритмів було реалізовано ряд допоміжних алгоритмів: арифметичні операції та
+логічні операції.
+Також було проведено тестування фунціоналу на основі реалізації багатослівної арифметики Gnu MP.
+В решті, було проведено тестування швидкодії на данних різної розмірності для всіх 4х реалізованих 
+алгоритмів та порівняно з бібліотечними реалізаціями GNU MP та OpenSSL.
+Код тетів та безпосередньо бібліотеки був реалізований мовою С++.
+
+\textbf{Binary LR}
+Цей алгортм дуже простий 
+
+
+\textbf{Тестування}
+\begin{figure}[h!]
+  \includegraphics[width=\linewidth]{"gr.png"}
+  \caption{Порівняльні данні}
+  \label{fig:cmp}
+\end{figure}
+\end{document}
