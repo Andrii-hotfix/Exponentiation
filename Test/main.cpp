@@ -406,7 +406,7 @@ constexpr size_t maxTestedBitsSize = 512;
 
 //        BigInt myBase(base.get_str(16));
 //        auto myStart = high_resolution_clock::now();
-//        BigInt myResult = myBase.kAryLRExp(BigInt(exponent));
+//        BigInt myResult = myBase.mAryLRExp(BigInt(exponent));
 //        auto myStop = high_resolution_clock::now();
 //        auto myDuration = duration_cast<microseconds>(myStop - myStart);
 //        data << myBase.bitsLen() << "," << exponent << "," << myDuration.count() << "," << std::endl;
@@ -432,8 +432,6 @@ TEST(BigIntPerf, FixedExp)
         BIGNUM* osslResult = BN_new();
         BIGNUM* osslExp = BN_new();
         BN_CTX* ctx = BN_CTX_new();
-//        std::string baseStr = gmpBase.get_str(16);
-//        std::string expStr = std::to_string();
         BN_hex2bn(&osslBase, gmpBase.get_str(16).c_str());
         BN_dec2bn(&osslExp, std::to_string(randConstExp).c_str());
         // Home-grown implementation :)
@@ -451,11 +449,29 @@ TEST(BigIntPerf, FixedExp)
         auto osslDuration = duration_cast<microseconds>(osslStop - osslStart);
         data << osslDuration.count() << ",";
 
-        auto myStart = high_resolution_clock::now();
-        myBase.binarySWExp(randConstExp);
+        auto mySwStart = high_resolution_clock::now();
+        myBase.binaryLRExp(randConstExp);
         auto myStop = high_resolution_clock::now();
-        auto myDuration = duration_cast<microseconds>(myStop - myStart);
-        data << myDuration.count() << "," << std::endl;
+        auto myDuration = duration_cast<microseconds>(myStop - mySwStart);
+        data << myDuration.count() << ",";
+
+        auto myArStart = high_resolution_clock::now();
+        myBase.binaryRLExp(randConstExp);
+        auto myArStop = high_resolution_clock::now();
+        auto myArDuration = duration_cast<microseconds>(myArStop - myArStart);
+        data << myArDuration.count() << ",";
+
+        auto myLrStart = high_resolution_clock::now();
+        myBase.mAryLRExp(randConstExp);
+        auto myLrStop = high_resolution_clock::now();
+        auto myLrDuration = duration_cast<microseconds>(myLrStop - myLrStart);
+        data << myLrDuration.count() << ",";
+
+        auto myRLStart = high_resolution_clock::now();
+        myBase.binarySWExp(randConstExp);
+        auto myRLStop = high_resolution_clock::now();
+        auto myRLDuration = duration_cast<microseconds>(myRLStop - myRLStart);
+        data << myRLDuration.count() << "," << std::endl;
 
         BN_clear_free(osslBase);
         BN_clear_free(osslExp);
