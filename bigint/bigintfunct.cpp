@@ -83,7 +83,7 @@ BigInt operator%(const BigInt& op, const BigInt& modulo)
     if (modulo.isZero())
         return op;
 
-    if (op <  maxWord and modulo < maxWord)
+    if (op < maxWord and modulo < maxWord)
         return op.getHeap()[0] % modulo.getHeap()[0];
 
     BigInt remainder = 0;
@@ -96,7 +96,8 @@ BigInt operator%(const BigInt& op, const BigInt& modulo)
     for (size_t i = 0; q0 > 0; ++i) {
         q1 = divisionRemainder(q0 * c, bPowerT).first;
         r1 = q0 * c  - q1 * bPowerT;
-        remainder = remainder + r0;
+        remainder = remainder + r1;
+        q0 = q1;
     }
     while (remainder >= modulo)
         remainder = remainder - modulo;
