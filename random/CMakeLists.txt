@@ -3,6 +3,7 @@ enable_testing()
 
 add_library(${PROJECT_NAME}
             bbs.cpp
+            gost.cpp
             )
 
 target_link_libraries(${PROJECT_NAME}
