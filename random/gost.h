@@ -15,9 +15,11 @@ public:
 
 private:
     BigInt congruent32();
+    void fromStep6Funct();
 
     uint16_t _paramC;
     BigInt _state;
+    BigInt _congr32State;
 
     BigInt _modulo32 = (BigInt(1) << word(32));
     BigInt _paramB = 19381;
