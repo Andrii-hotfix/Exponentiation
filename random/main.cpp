@@ -66,15 +66,8 @@ int main(int argc, const char* argv[])
                 std::cout << generator.getRandomBits().getStr(radix) << std::endl;
         } else if (mode == "gost") {
             GOST generator;
-            if (variables["nbits"].as<word>() == 16) {
                 for (word i = 0; i < iterations; ++i)
-                    std::cout << generator.getRandomBits16().getStr(radix) << std::endl;
-            } else if (variables["nbits"].as<word>() == 32) {
-                for (word i = 0; i < iterations; ++i)
-                    std::cout << generator.congruent32().getStr(radix) << std::endl;
-            } else {
-                throw std::logic_error("GOST generator can only generate either 16 or 32 bit words");
-            }
+                    std::cout << generator.getRandomBits(variables["nbits"].as<word>()).getStr(radix) << std::endl;
         } else {
             throw std::logic_error("Unknown exponentiation mode");
         }

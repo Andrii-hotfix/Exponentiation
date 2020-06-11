@@ -136,6 +136,11 @@ bool operator==(const BigInt& left, const BigInt& right)
     return BigInt(left ^ right).isZero();
 }
 
+bool operator!=(const BigInt &left, const BigInt &right)
+{
+    return not (left == right);
+}
+
 bool operator<(const BigInt& left, const BigInt& right)
 {
     if (left.bitsLen() != right.bitsLen())
@@ -286,3 +291,4 @@ BigInt gcd(const BigInt& left, const BigInt& right)
 
     return resultingLeft << shift;
 }
+

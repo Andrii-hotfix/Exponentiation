@@ -31,92 +31,55 @@ BigInt GOST::getRandomBits(word nBits)
             break;
     }
     // Find prime Ps
-    BigInt p = 1;
-    constexpr unsigned numberOfPrimalityWitnesses = 10;
-    for (p <<= variablesT.back();; p = p + 1) {
-        if (primalityTest(p, numberOfPrimalityWitnesses))
-            break;
-    }
+    uint64_t p = blumsPrime(variablesT.back());
     int32_t m = variablesT.size() - 2;
 
-    auto fromStep6Funct = [&](word rm, word pm) {
-        // Generate ys
-        std::vector<BigInt> variablesY;
-        for (int32_t i = 0; i < m; ++i)
-        variablesY.push_back(congruent32());
+    BigInt k = 0;
+step5:
+    word rm = std::ceil(variablesT[m + 1] / 16);
 
-        BigInt Y = 0;
-        BigInt pow2to161 = 1;
-        pow2to161 <<= 161;
-
-        for (word i = 0; i < rm - 1; ++i)
-        Y = Y + variablesY[i] * pow2to161;
-
-        BigInt y0 = variablesY[rm];
-        BigInt N = divisionRemainder((1 << (variablesT[m] - 1)), p).first + divisionRemainder((1 << variablesT[m]) * Y, (p * (1 << (16 * rm)))).first;
-        if (N.getBitAt(0) == 1)
-        N = N + 1;
-
-        BigInt k = 0;
-        pm = p * (N + k) + 1;
-    };
-
-    do {
-        word rm = std::ceil(variablesT[m + 1] / 16);
-
-        BigInt pm;
-        do {
-            // Generate ys
-            std::vector<BigInt> variablesY;
-            for (int32_t i = 0; i < m; ++i)
-                variablesY.push_back(congruent32());
-
-            BigInt Y = 0;
-            BigInt pow2to161 = 1;
-            pow2to161 <<= 161;
-
-            for (word i = 0; i < rm - 1; ++i)
-                Y = Y + variablesY[i] * pow2to161;
-
-            BigInt y0 = variablesY[rm];
-            BigInt N = divisionRemainder((1 << (variablesT[m] - 1)), p).first + divisionRemainder((1 << variablesT[m]) * Y, (p * (1 << (16 * rm)))).first;
-            if (N.getBitAt(0) == 1)
-                N = N + 1;
-
-            BigInt k = 0;
-            pm = p * (N + k) + 1;
-        } while (pm > (1 << variablesT[m]));
-
-        m = m - 1;
-    } while (m >= 0);
-    return p;
-}
-
-BigInt GOST::congruent32()
-{
-    _congr32State = (_paramB * _congr32State + BigInt(_paramC)) % _modulo32;
-    return _congr32State;
-}
-
-void GOST::fromStep6Funct()
-{
     // Generate ys
+step6:
     std::vector<BigInt> variablesY;
-    for (int32_t i = 0; i < m; ++i)
-    variablesY.push_back(congruent32());
+    for (word i = 0; i < rm; ++i)
+        variablesY.push_back(congruent32());
 
     BigInt Y = 0;
     BigInt pow2to161 = 1;
     pow2to161 <<= 161;
 
     for (word i = 0; i < rm - 1; ++i)
-    Y = Y + variablesY[i] * pow2to161;
+        Y = Y + variablesY[i] * pow2to161;
 
-    BigInt y0 = variablesY[rm];
+    _congr32State = variablesY[std::min(rm, 0u)];
     BigInt N = divisionRemainder((1 << (variablesT[m] - 1)), p).first + divisionRemainder((1 << variablesT[m]) * Y, (p * (1 << (16 * rm)))).first;
     if (N.getBitAt(0) == 1)
-    N = N + 1;
+        N = N + 1;
 
-    BigInt k = 0;
-    pm = p * (N + k) + 1;
+step11:
+    BigInt pm = p * (N + k) + 1;
+
+    if (pm > (1 << (variablesT[m])))
+        goto step6;
+
+    BigInt exp1 = m;
+    exp1 = exp1.binarySWExp(N + k);
+    if ((BigInt(2).binarySWExp(exp1) % pm) != 1 or (BigInt(2).binarySWExp(N + k) % pm) != 1) {
+        k = k + 2;
+        goto step11;
+    }
+
+    m = m - 1;
+
+    if (m >= 0)
+        goto step5;
+
+    return p;
+
+}
+
+BigInt GOST::congruent32()
+{
+    _congr32State = (_paramB * _congr32State + BigInt(_paramC)) % _modulo32;
+    return _congr32State;
 }

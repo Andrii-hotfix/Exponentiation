@@ -135,6 +135,9 @@ BigInt BigInt::binarySWExp(const BigInt& exponent)
     if (_table.empty())
         generateExpTable();
 
+    if (_heap.size() == 1 and exponent.wordLen() == 1)
+        return std::pow(_heap.front(), exponent.getHeap().front());
+
     BigInt result = 1;
     for (int32_t i = exponent.bitsLen() - 1; i >= 0;) {
         if (exponent.getBitAt(i) == false) {

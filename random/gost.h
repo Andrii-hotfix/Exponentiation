@@ -15,7 +15,6 @@ public:
 
 private:
     BigInt congruent32();
-    void fromStep6Funct();
 
     uint16_t _paramC;
     BigInt _state;

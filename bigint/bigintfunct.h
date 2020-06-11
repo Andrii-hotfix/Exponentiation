@@ -12,6 +12,7 @@ std::pair<BigInt, BigInt> divisionRemainder(const BigInt& numerator, const BigIn
 
 // Comparisons
 bool operator==(const BigInt& left, const BigInt& right);
+bool operator!=(const BigInt& left, const BigInt& right);
 bool operator<(const BigInt& left, const BigInt& right);
 bool operator<=(const BigInt& left, const BigInt& right);
 bool operator>(const BigInt& left, const BigInt& right);
